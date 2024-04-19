@@ -5,50 +5,45 @@ Repository for ICPP 2024 artifact submission
 
 ###### 1) Gurobi
 
-    Write and/or solve model
+Write and/or solve model
 
 inputs:
-    ./gurobi/prob_defs/
-
+- ./gurobi/prob_defs/
 outputs:
-    ./models/
-    ./topologies_and_routing/topo_maps/
+- ./models/
+- ./topologies_and_routing/topo_maps/
 
 ###### 2) Open Source Solvers
 
-    Use open source solver(s) to read and solve models
+Use open source solver(s) to read and solve models
 
 inputs:
-    ./models/
-    
+- ./models/
 outputs:
-    ./topologies_and_routing/topo_maps/
+- ./topologies_and_routing/topo_maps/
 
 ###### 3) Implementation Details
 
-    Analyze, route, and allocate escape VNs
+Analyze, route, and allocate escape VNs
 
 inputs:
-    ./topologies_and_routing/topo_maps/
-    
+- ./topologies_and_routing/topo_maps/  
 outputs:
-    ./topologies_and_routing/metrics/
-    ./topologies_and_routing/nr_lists/
-    ./topologies_and_routing/vn_maps/
+- ./topologies_and_routing/metrics/
+- ./topologies_and_routing/nr_lists/
+- ./topologies_and_routing/vn_maps/
 
 ###### 4) Simulate
 
-    Simulate synthetic and real workloads in gem5
+Simulate synthetic and real workloads in gem5
 
 inputs:
-    ./topologies_and_routing/topo_maps/
-    ./topologies_and_routing/nr_lists/
-    ./topologies_and_routing/vn_maps/
-
+- ./topologies_and_routing/topo_maps/
+- ./topologies_and_routing/nr_lists/
+- ./topologies_and_routing/vn_maps/
 outputs:
-    ./gem5/synth_outputs/
-    ./gem5/parsec_outputs/
-
+- ./gem5/synth_outputs/
+- ./gem5/parsec_outputs/
 
 
 ## 3) Implementation Details
