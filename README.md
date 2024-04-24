@@ -3,37 +3,43 @@ Repository for ICPP 2024 artifact submission
 
 # General Flow
 
-###### 1) Gurobi
+All paths relative to main netsmith_icpp24 directory
+
+##### 1) Gurobi
 
 Write and/or solve model
 
 inputs:
 - ./gurobi/prob_defs/
-outputs:
-- ./models/
-- ./topologies_and_routing/topo_maps/
 
-###### 2) Open Source Solvers
+outputs:
+- ./gurobi/files/models/
+- ./gurobi/files/running_solutions
+- ./gurobi/files/optimal_solutions
+
+##### 2) Open Source Solvers
 
 Use open source solver(s) to read and solve models
 
 inputs:
-- ./models/
+- ./gurobi/files/models/
+
 outputs:
 - ./topologies_and_routing/topo_maps/
 
-###### 3) Implementation Details
+##### 3) Implementation Details
 
 Analyze, route, and allocate escape VNs
 
 inputs:
-- ./topologies_and_routing/topo_maps/  
+- ./topologies_and_routing/topo_maps/
+
 outputs:
 - ./topologies_and_routing/metrics/
 - ./topologies_and_routing/nr_lists/
 - ./topologies_and_routing/vn_maps/
 
-###### 4) Simulate
+##### 4) Simulate
 
 Simulate synthetic and real workloads in gem5
 
@@ -41,10 +47,43 @@ inputs:
 - ./topologies_and_routing/topo_maps/
 - ./topologies_and_routing/nr_lists/
 - ./topologies_and_routing/vn_maps/
+
 outputs:
 - ./gem5/synth_outputs/
 - ./gem5/parsec_outputs/
 
+
+## 1) Gurobi
+
+Generate Large (20r) NetSmith topology
+```
+./gurobi/bin/auto_top -if ./files/prob_defs/dev_20r_4p_25ll.dat -of ns_l_latop --model_type w_hop --max_diam 20 --uni_links -o avg_hops --use_run_sol --concurrent_mip --heuristic_ratio 0.8 --mip_focus 1
+```
+
+If completes optimal the map will be in ./files/optimal_solutions and/or running solutions (--use_run_sol) in ./files/runnings_solutions
+
+Generate Large (20r) NetSmith model file (.lp) that doesn't use any general or SOS constraints
+```
+./gurobi/bin/auto_top -if ./files/prob_defs/dev_20r_4p_25ll.dat --max_diam 20 --uni_links -o avg_hops --simple_model --no_solve --use_lp_model
+```
+
+Script to make a lot of models
+```
+python3 python_scripts/make_all_models.py
+```
+
+If more problem defintions need to be made then
+```
+python3 python_scripts/write_prob_defs.py
+```
+
+
+## 2) Open Source Solvers
+
+GLPK
+```
+glpsol -h
+```
 
 ## 3) Implementation Details
 
