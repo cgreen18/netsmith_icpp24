@@ -33,7 +33,7 @@ from mip import Model
 
 import argparse
 
-VERBOSE = True
+VERBOSE = False
 
 def read_allpath_list(file_name):
 
@@ -45,7 +45,8 @@ def read_allpath_list(file_name):
     with open(file_name,'r') as inf:
         for line in inf.readlines():
             raw_line = line.replace('\n','')
-            this_path = [int(x) for x in list(raw_line) if ' ' not in x]
+            print(f'raw_line={raw_line}')
+            this_path = [int(x) for x in raw_line.split(" ")]
             pathlist.append(this_path)
             path_len = len(this_path) - 1
 
@@ -65,13 +66,16 @@ def read_allpath_list(file_name):
     # account for zero indexing
     n_routers += 1
 
-    print(f'read pathlsit = {pathlist}')
-    print(f'src_dest_to_paths_map ({len(src_dest_to_paths_map)}) = {src_dest_to_paths_map}')
-    input(f'w/ n_routers = {n_routers}, n_paths= { n_paths}, and n_links = {n_links}')
+    print(f'read pathlsit from {file_name}')
+    if VERBOSE:
+        print(f'\t{pathlist}')
+        input(f'src_dest_to_paths_map ({len(src_dest_to_paths_map)}) = {src_dest_to_paths_map}')
+    
+    print(f'w/ n_routers = {n_routers}, n_paths= { n_paths}, and n_links = {n_links}')
 
     return pathlist,n_routers,  n_paths, n_links, src_dest_to_paths_map
 
-def make_mclb_model(pathlist_name):
+def make_mclb_model(pathlist_name, out_name):
 
 
     allpath_list, n_routers, n_paths, n_links, src_dest_to_paths_map = read_allpath_list(pathlist_name)
@@ -88,7 +92,7 @@ def make_mclb_model(pathlist_name):
 
 
     print(f'n_vars = {n_vars}')
-    input(f'variable_index_map={variable_index_map}')
+    # input(f'variable_index_map={variable_index_map}')
 
     max_load = 2*n_routers*n_routers
 
@@ -105,13 +109,14 @@ def make_mclb_model(pathlist_name):
 
     var_integrality = np.ones(n_vars)
 
-    print(f'var_lb ({var_lb.shape}) = \n\t{var_lb}')
-    print(f'var_ub ({var_ub.shape} = \n\t{var_ub}')
-    input(f'var_integrality ({var_integrality.shape} = \n\t{var_integrality}')
+    if VERBOSE:
+        print(f'var_lb ({var_lb.shape}) = \n\t{var_lb}')
+        print(f'var_ub ({var_ub.shape} = \n\t{var_ub}')
+    # input(f'var_integrality ({var_integrality.shape} = \n\t{var_integrality}')
 
     obj_coeffs = np.zeros(n_vars)
     obj_coeffs[0] = 1
-    input(f'obj_coeffs ({obj_coeffs.shape}) = {obj_coeffs}')
+    # input(f'obj_coeffs ({obj_coeffs.shape}) = {obj_coeffs}')
 
     n_constrs = 0
     constr_lb_list = []
@@ -129,7 +134,9 @@ def make_mclb_model(pathlist_name):
             if(i==j):
                 which_cload = i*n_routers + j
                 cload_idx = variable_index_map['cload'] + which_cload
-                print(f'Skipping cload_idx={cload_idx}')
+
+                if VERBOSE:
+                    print(f'Skipping cload_idx={cload_idx}')
                 continue
             # row width = n_vars
             this_row = np.zeros(n_vars)
@@ -141,51 +148,57 @@ def make_mclb_model(pathlist_name):
             maxcload_idx = variable_index_map['max_cload']
             this_row[maxcload_idx] = 1
 
-            print(f'Constraint #{n_constrs:02} set indices cload_idx={cload_idx} to -1 and maxcload_idx={maxcload_idx} to 1')
-            print(f'\t0 <= A[{maxcload_idx}] - A[{cload_idx}] <= {max_load}')
+            if VERBOSE:
+                print(f'Constraint #{n_constrs:02} set indices cload_idx={cload_idx} to -1 and maxcload_idx={maxcload_idx} to 1')
+                print(f'\t0 <= A[{maxcload_idx}] - A[{cload_idx}] <= {max_load}')
             n_constrs += 1
             
             constr_A_list.append(this_row)
             constr_lb_list.append(0)
             constr_ub_list.append(max_load)
 
-    input(f'Completed max_cload constr\n')
+    # input(f'Completed max_cload constr\n')
 
     # cload constr
-    # cload[i][j] == sum( sum( flow_load[i][j][a][b] ))
+    # cload[a][b] == sum( sum( flow_load[i][j][a][b] ))
     # =>
     # 0 <= -1*cload[i][j] + flow_load[i][j][0][0] + flow_load[i][j][0][1] + ... + flow_load[i][j][n-1][n-1] <= 0
-    for i in range(n_routers):
-        for j in range(n_routers):
-            if(i==j):
+    for a in range(n_routers):
+        for b in range(n_routers):
+            if(a==b):
                 continue
             # row width = n_vars
             this_row = np.zeros(n_vars)
 
-            which_flow = i*n_routers*n_routers*n_routers + j*n_routers*n_routers
+            which_link = a*n_routers + b
 
             f_idxs = []
-            for a in range(n_routers):
-                for b in range(n_routers):
-                    which_link = a*n_routers + b
+            for i in range(n_routers):
+                for j in range(n_routers):
+                    which_flow = i*n_routers*n_routers*n_routers + j*n_routers*n_routers
+                    
 
                     flow_load_idx = variable_index_map['flow_load'] + which_flow + which_link
                     this_row[flow_load_idx] = 1
                     f_idxs.append(flow_load_idx)
+
+                    if VERBOSE:
+                        print(f'flow idx {flow_load_idx} for flow src, dest {i}->{j} and link between routers {a},{b}')
             
-            which_cload = i*n_routers + j
+            which_cload = a*n_routers + b
             cload_idx = variable_index_map['cload'] + which_cload
             this_row[cload_idx] = -1
 
-            print(f'Constraint #{n_constrs:02} set indices cload_idx={cload_idx} to -1 and flow_idxs={f_idxs} to 1')
-            print(f'\t0 <= -1*A[{cload_idx}] +A[{f_idxs}] <= 0')
+            if VERBOSE:
+                print(f'Constraint #{n_constrs:02} set indices cload_idx={cload_idx} to -1 and flow_idxs={f_idxs} to 1')
+                print(f'\t0 <= -1*A[{cload_idx}] +A[{f_idxs}] <= 0')
             n_constrs += 1
 
             constr_A_list.append(this_row)
             constr_lb_list.append(0)
             constr_ub_list.append(0)
 
-    input(f'Completed cload constr\n')
+    # input(f'Completed cload constr\n')
 
     eM = 2*max_load
     eps = 0.001
@@ -199,7 +212,8 @@ def make_mclb_model(pathlist_name):
 
         pl = len(path) - 1
 
-        print(f'path {which_path:02} = {path}')
+        if VERBOSE:
+            print(f'path {which_path:02} = {path}')
 
         if(s==d):
             continue
@@ -211,7 +225,7 @@ def make_mclb_model(pathlist_name):
         path_idx = variable_index_map['path_used'] + which_path
         this_row[path_idx] = -eM
 
-        which_flow = i*n_routers*n_routers*n_routers + j*n_routers*n_routers
+        which_flow = s*n_routers*n_routers*n_routers + d*n_routers*n_routers
 
         f_idxs = []
         for i in range(pl):
@@ -225,15 +239,19 @@ def make_mclb_model(pathlist_name):
             this_row[flow_load_idx] = 1
             f_idxs.append(flow_load_idx)
 
-        print(f'Constraint #{n_constrs:02} set indices path_idx={path_idx} to -{eM} and flow_idxs={f_idxs} to 1')
-        print(f'\t{pl} - {eM} <= -{eM}*A[{path_idx}] + A[{f_idxs}] <= {pl} - {eps}')
+            if VERBOSE:
+                print(f'flow idx {flow_load_idx} for flow src, dest {s}->{d} and link between routers {a},{b}')
+
+        if VERBOSE:
+            print(f'Constraint #{n_constrs:02} set indices path_idx={path_idx} to -{eM} and flow_idxs={f_idxs} to 1')
+            print(f'\t{pl} - {eM} <= -{eM}*A[{path_idx}] + A[{f_idxs}] <= {pl} - {eps}')
         n_constrs += 1
 
         constr_A_list.append(this_row)
         constr_lb_list.append(pl - eM)
         constr_ub_list.append(pl - eps)
 
-    input(f'Completed path selection constr')
+    # input(f'Completed path selection constr')
 
 
     # path satisfied
@@ -253,8 +271,8 @@ def make_mclb_model(pathlist_name):
                 this_row[path_idx] = 1
                 p_idxs.append(path_idx)
 
-
-            print(f'Constraint #{n_constrs:02} for src->dest {i}->{j} set indices p_idxs={p_idxs} to 1')
+            if VERBOSE:
+                print(f'Constraint #{n_constrs:02} for src->dest {i}->{j} set indices p_idxs={p_idxs} to 1')
             n_constrs += 1
 
             constr_A_list.append(this_row)
@@ -267,6 +285,103 @@ def make_mclb_model(pathlist_name):
     res = milp(c=obj_coeffs, bounds=bounds, constraints=constraints, integrality=var_integrality)
 
     print(f'res = {res}')
+
+    # for i,x in enumerate(res.x):
+    #     print(f'{i:03} : {x}')
+
+    
+    # reconstruct cload
+    if VERBOSE:
+        print(f'cload')
+    for row in range(n_routers ):
+        row_idx = variable_index_map['cload'] + n_routers*row
+        if VERBOSE:
+            print(f'{row:02} : {", ".join([ f"{int(v):02}" for v in res.x[row_idx:row_idx+n_routers]]) }')
+
+    # reconstruct flow_load
+    flow_load_mat = []
+    if VERBOSE:
+        print(f'flow_load')
+    for flow in range(n_routers*n_routers ):
+        flow_load_mat.append([])
+        if VERBOSE:
+            print(f'flow {flow} {flow//n_routers}->{flow%n_routers}')
+        for row_num in range(n_routers):
+            
+            row_idx = variable_index_map['flow_load'] + n_routers*row_num + n_routers*n_routers*flow
+            if VERBOSE:
+                print(f'{row_num:02} : {", ".join([ f"{int(v):02}" for v in res.x[row_idx:row_idx+n_routers]]) }')
+            row = res.x[row_idx:row_idx+n_routers]
+            flow_load_mat[flow].append(row)
+
+    selected_paths = reconstruct_pathlist(flow_load_mat, n_routers)
+
+    output_pathlist(selected_paths, out_name)
+
+def output_pathlist( path_list, file_name):
+
+    with open(file_name, 'w+') as of:
+        of.write(file_name + '\n')
+        for path in path_list:
+            of.write(f'{path}\n')
+
+    print(f'Wrote to {file_name}')
+
+# a 3D mat (flows x n_routers x n_routers)
+def reconstruct_pathlist(flow_load, n_routers):
+    selected_paths = []
+
+    thresh = n_routers
+
+    for i, load_mat in enumerate(flow_load):
+
+        s = i // n_routers
+        d = i % n_routers
+
+        # print(f'flow {i} : {s}->{d}')
+
+        if(s==d):
+            selected_paths.append([s])
+            continue
+
+        cur = s
+        path = [s]
+
+        iters = 0
+        bad_dests = []
+
+        while(cur != d):
+            # print(f'\tcur = {cur}')
+            found_next = False
+            for n in range(n_routers):
+                # print(f'\tconsidering link {cur}->{n} w/ load_mat {load_mat[cur][n]}')
+
+                if n in bad_dests:
+                    continue
+
+                if load_mat[cur][n] > 0:
+                    cur = n
+                    found_next = True
+                    break
+
+            if found_next:
+                path.append(cur)
+
+            iters += 1
+            if iters > thresh:
+                # input(f'bad dest {cur}')
+                # restart
+                bad_dests.append(cur)
+                cur = s
+                path = [s]
+                iters = 0
+
+            
+
+        # print(f'w/ path {path}')
+        selected_paths.append(path)
+
+    return selected_paths
 
 def make_test_model():
     '''
@@ -308,6 +423,7 @@ def main():
     parser = argparse.ArgumentParser(description='Solve MCLB formulation with open source solvers')
     parser.add_argument('--allpath_list',type=str,help='allpath_list to solve')
     parser.add_argument('--test_model',action='store_true',help='allpath_list to solve')
+    parser.add_argument('--out_name',type=str,help='name of output pathlist file')
 
 
     args = parser.parse_args()
@@ -319,7 +435,7 @@ def main():
     if(args.test_model):
         make_test_model()
 
-    make_mclb_model(args.allpath_list)
+    make_mclb_model(args.allpath_list, args.out_name)
 
 if __name__ == '__main__':
     main()
