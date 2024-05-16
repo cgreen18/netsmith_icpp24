@@ -1,11 +1,43 @@
 # netsmith_icpp24
 Repository for ICPP 2024 artifact submission
 
+Purdue University
+Conor Green and Mithuna Thottethodi
+
 # General Flow
 
 All paths relative to main netsmith_icpp24 directory
 
-##### 1) Gurobi
+
+Assuming all tools set up correctly and running from netsmith_icpp24 directory, this will create, route, avoid deadlocks, and simulate a simple (twelve router, four port) topology...
+```
+cd gurobi
+./bin/auto_top -of my_12r_topo
+cp files/optimal_solutions/my_12r_topo.map ../implementation/topologies_and_routing/topo_maps/
+cd ../implementation/
+source ./bash/analyze_topo.sh topologies_and_routing/topo_maps/my_12r_topo.map files/static_metrics/my_12r_topo_rpt.txt
+source ./bash/process_topo_mclb.sh my_12r_topo ./topologies_and_routing/topo_maps/ 12 4
+cp ./topologies_and_routing/topo_maps/my_12r_topo.map ../gem5/topologies_and_routing/topo_maps/
+cp ./topologies_and_routing/nr_lists/my_12r_topo_mclb.nrl ../gem5/topologies_and_routing/nr_lists/
+cp ./topologies_and_routing/vn_maps/my_12r_topo_mclb_hops_4vns.vn ../gem5/topologies_and_routing/vn_maps/
+cd ../gem5
+
+```
+
+
+
+% \begin{itemize}
+%     \item .map - these are one-hot maps of router topologies
+%     \item .rallpaths - raw list of all paths between all source, destination pairs
+%     \item .paths - selected list of paths (one path per flow) for all source, destination pairs
+%     \item .nrl - ``next router list'' is a list of 2D routing tables of next hop for each router in the network
+%     \item .vn - ``virtual network'' map is a 2D table of the designated escape virtual network for a source, destination pair
+% \end{itemize}
+
+
+
+
+#### 1) Gurobi
 
 Write and/or solve model
 
@@ -17,7 +49,7 @@ outputs:
 - ./gurobi/files/running_solutions
 - ./gurobi/files/optimal_solutions
 
-##### 2) Open Source Solvers
+#### 2) Open Source Solvers
 
 Use open source solver(s) to read and solve models
 
@@ -25,9 +57,9 @@ inputs:
 - ./gurobi/files/models/
 
 outputs:
-- ./topologies_and_routing/topo_maps/
+- ./open_source_solvers/files/solutions
 
-##### 3) Implementation Details
+#### 3) Implementation Details
 
 Analyze, route, and allocate escape VNs
 
@@ -39,7 +71,7 @@ outputs:
 - ./topologies_and_routing/nr_lists/
 - ./topologies_and_routing/vn_maps/
 
-##### 4) Simulate
+#### 4) Simulate
 
 Simulate synthetic and real workloads in gem5
 
@@ -92,7 +124,7 @@ glpsol -h
 #### Static Metrics
 
 ```
-python3 implementation/python_scripts/static_metrics.py --simple_dist --filename open_source_solvers/SYMPHONY/outputs/20r_4p_l_ulinks.map
+python3 implementation/python_scripts/static_metrics.py --filename 
 ```
 
 #### Visualizer
@@ -103,8 +135,11 @@ python3 implementation/python_scripts/visualizer.py --directed --filename open_s
 
 
 #### Route
-```
 
+MCLB
+
+```
+./bin/mclb -t ../implementation/topologies_and_routing/topo_maps/64r/ours/ns_l_latop_64r.map --num_routers 64 -pl ../implementation/topologies_and_routing/allpath_lists/ns_l_latop_64r.rallpaths -of ns_l_latop_64r
 ```
 
 
@@ -157,4 +192,25 @@ export _TMP_NRL="./topologies_and_routing/nr_lists/noci/ns_l_latop_noci_picky_co
 export _TMP_VN="./topologies_and_routing/vn_maps/noci/ns_l_latop_noci_picky_cohmem_prioritized_doubley_memory_mclb_hops_6vns.vn"
 
 ./gem5/build/X86/gem5.fast -d $_TMP_OUTDIR ./gem5/configs/auto_top/auto_top_fs_v3.py -I 100000000 --insts_after_warmup 100000000 --benchmark_parsec freqmine --router_map_file $_TMP_TOPO --flat_nr_map_file $_TMP_NRL --flat_vn_map_file $_TMP_VN $_TMP_FLAGS
+```
+
+
+
+## 5) Analysis
+
+#### Parse Synthetic
+
+#### Graph Synthetic
+
+#### Parse PARSEC
+
+#### Graph PARSEC
+
+
+#### DSENT
+
+```
+cd ./ext/dsent
+cmake ./
+make
 ```
