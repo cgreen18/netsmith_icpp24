@@ -12,6 +12,7 @@ All paths relative to main netsmith_icpp24 directory
 Assuming all tools set up correctly and running from netsmith_icpp24 directory, this will create, route, avoid deadlocks, and simulate a simple (twelve router, four port) topology...
 ```
 cd gurobi
+source setup.sh
 ./bin/auto_top -of my_12r_topo
 cp files/optimal_solutions/my_12r_topo.map ../implementation/topologies_and_routing/topo_maps/
 cd ../implementation/
