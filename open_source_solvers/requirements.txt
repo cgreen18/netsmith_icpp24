@@ -1,0 +1,15 @@
+absl-py==2.1.0
+cffi==1.15.1
+immutabledict==4.2.0
+mip==1.15.0
+numpy==1.26.4
+ortools==9.9.3963
+pandas==2.2.2
+protobuf==5.26.1
+PuLP==2.8.0
+pycparser==2.22
+python-dateutil==2.9.0.post0
+pytz==2024.1
+scipy==1.13.0
+six==1.16.0
+tzdata==2024.1
