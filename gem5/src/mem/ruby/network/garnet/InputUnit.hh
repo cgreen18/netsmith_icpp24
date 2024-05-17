@@ -113,10 +113,21 @@ class InputUnit : public Consumer
         return virtualChannels[vc].peekTopFlit();
     }
 
+    int
+    get_n_vcs(){
+        return virtualChannels.size();
+    }
+
     inline flit*
     getTopFlit(int vc)
     {
         return virtualChannels[vc].getTopFlit();
+    }
+
+    inline bool
+    hasTopFlit(int vc)
+    {
+        return virtualChannels[vc].hasTopFlit();
     }
 
     inline bool
@@ -152,9 +163,7 @@ class InputUnit : public Consumer
     double get_buf_write_activity(unsigned int vnet) const
     { return m_num_buffer_writes[vnet]; }
 
-    bool functionalRead(Packet *pkt, WriteMask &mask);
     uint32_t functionalWrite(Packet *pkt);
-
     void resetStats();
 
   private:

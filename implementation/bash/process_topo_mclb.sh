@@ -3,7 +3,7 @@
 
 
 # usage ./bash/process_topo_mclb.sh <base-name-of-topology> <directory> <number-routers> <allowed-number-escape-vns>
-# e.g. "source ./bash/process_topo_mclb.sh ns_l_latop ./topologies_and_routing/topo_maps/20r 20 8"
+# e.g. "source ./bash/process_topo_mclb.sh ns_l_latop ./topologies_and_routing/topo_maps/20r 20 4"
 
 
 # generate list of all paths

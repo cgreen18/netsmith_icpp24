@@ -53,6 +53,7 @@ SwitchAllocator::SwitchAllocator(Router *router)
     m_num_vcs = m_router->get_num_vcs();
     m_vc_per_vnet = m_router->get_vc_per_vnet();
 
+
     m_input_arbiter_activity = 0;
     m_output_arbiter_activity = 0;
 }
@@ -76,6 +77,15 @@ SwitchAllocator::init()
     for (int i = 0; i < m_num_outports; i++) {
         m_round_robin_inport[i] = 0;
     }
+
+    // auto_top
+    // using escape vns
+    // local/this class references
+    m_use_escape_vns = m_router->get_use_escape_vns();
+    m_evn_deadlock_partition = m_router->get_deadlock_partition();
+    m_n_deadlock_free = m_router->get_n_deadlock_free();
+
+
 }
 
 /*
@@ -124,12 +134,63 @@ SwitchAllocator::arbitrate_inports()
                 int outport = input_unit->get_outport(invc);
                 int outvc = input_unit->get_outvc(invc);
 
+
+                // PEEK flit from Input VC
+                flit *t_flit = input_unit->peekTopFlit(invc);
+
+                RouteInfo ri = t_flit->get_route();
+                int src_r = ri.src_router;
+                int dest_r = ri.dest_router;
+
+                // int evn_class = m_router->get_net_ptr()->get_evn_for_src_dest(src_r, dest_r);
+
+            
                 // check if the flit in this InputVC is allowed to be sent
                 // send_allowed conditions described in that function.
-                bool make_request =
-                    send_allowed(inport, invc, outport, outvc);
+                bool make_request = false;
+
+                bool at_dest = false;
+                if(m_router->get_id() == dest_r) at_dest = true;
+
+                // be selective if using escape vns
+                // do not be selective if at destination
+
+                // removed at_dest shortcircuit 
+                if(m_use_escape_vns){ // && !at_dest){
+                    int evn_class = m_router->get_net_ptr()->get_evn_for_src_dest(src_r, dest_r);
+                    make_request = valid_send_allowed(inport, invc, outport, outvc, evn_class);
+                    DPRINTF(RubyNetwork,"SwitchAllocator::arbitrate_inports():: For evn class %d, invc %d, outport %d, send_allowed=%d\n",evn_class,invc , outport, make_request);
+                }
+
+                else{
+                    make_request = send_allowed(inport, invc, outport, outvc);
+                    DPRINTF(RubyNetwork,"SwitchAllocator::arbitrate_inports():: For ANY VC, send_allowed=%d\n",make_request);
+                }
+
+                // self
+                int link_s = m_router->get_id();
+                // link dest
+                // auto output_unit = m_router->getOutputUnit(outport);
+                // int link_d = output_unit->get_router()->get_id();
+
+                // skip stat collection for now
+                // if(!make_request){
+                    
+                    
+                //     int link_d = m_router->calc_next_router(src_r, dest_r);
+
+                //     if (link_d == -1){
+                //         link_d = link_s;
+                //     }
+
+
+                //     DPRINTF(RubyNetwork,"SwitchAllocator::arbitrate_inports():: rejected for link %d->%d along route %d->...->%d\n",link_s,link_d,src_r,dest_r);
+                //     m_router->get_net_ptr()->increment_r_rejected(link_s,link_d);
+                // }
 
                 if (make_request) {
+                    DPRINTF(RubyNetwork,"SwitchAllocator::arbitrate_inports():: accepted outport %d for link %d->-1 along route %d->...->%d\n",outport,link_s,src_r,dest_r);
+
                     m_input_arbiter_activity++;
                     m_port_requests[inport] = outport;
                     m_vc_winners[inport] = invc;
@@ -143,6 +204,7 @@ SwitchAllocator::arbitrate_inports()
                 invc = 0;
         }
     }
+    DPRINTF(RubyNetwork,"SwitchAllocator::arbitrate_inports():: completed inport arbitration\n");
 }
 
 /*
@@ -179,13 +241,41 @@ SwitchAllocator::arbitrate_outports()
                 // grant this outport to this inport
                 int invc = m_vc_winners[inport];
 
+
+                // PEEK flit from Input VC
+                flit *peeked_flit = input_unit->peekTopFlit(invc);
+
+                RouteInfo ri = peeked_flit->get_route();
+                int src_r = ri.src_router;
+                int dest_r = ri.dest_router;
+
+                
+
                 int outvc = input_unit->get_outvc(invc);
                 if (outvc == -1) {
                     // VC Allocation - select any free VC from outport
-                    outvc = vc_allocate(outport, inport, invc);
+        
+                    bool at_dest = false;
+                    if(m_router->get_id() == dest_r) at_dest = true;
+
+                    // be selective if using escape vns
+                    // do not be selective if at destination
+
+                    // removed at_dest condition for sankey
+                    if(m_use_escape_vns){ // && !at_dest){
+                        int evn_class = m_router->get_net_ptr()->get_evn_for_src_dest(src_r, dest_r);
+                        outvc = vc_allocate_valid(outport, inport, invc, evn_class);
+                    }
+                    else{
+                        outvc = vc_allocate(outport, inport, invc);
+                    }
                 }
 
-                // remove flit from Input VC
+                // if(outvc == -1){
+                //     m_router->get_net_ptr()->increment_r_rejected(src_r,dest_r);
+                // }
+
+                // REMOVE flit from Input VC
                 flit *t_flit = input_unit->getTopFlit(invc);
 
                 DPRINTF(RubyNetwork, "SwitchAllocator at Router %d "
@@ -201,6 +291,8 @@ SwitchAllocator::arbitrate_outports()
                             *t_flit,
                         m_router->curCycle());
 
+                // for Sankey
+                t_flit->set_last_vnvc(outvc);
 
                 // Update outport field in the flit since this is
                 // used by CrossbarSwitch code to send it out of
@@ -223,6 +315,9 @@ SwitchAllocator::arbitrate_outports()
 
                 if ((t_flit->get_type() == TAIL_) ||
                     t_flit->get_type() == HEAD_TAIL_) {
+
+                    // DPRINTF(RubyNetwork,"SwitchAllocator:: arbitrate_outports():: invc %d ready? %d\n",
+                        // invc,input_unit->isReady(invc, curTick()));
 
                     // This Input VC should now be empty
                     assert(!(input_unit->isReady(invc, curTick())));
@@ -264,6 +359,7 @@ SwitchAllocator::arbitrate_outports()
                 inport = 0;
         }
     }
+    DPRINTF(RubyNetwork,"SwitchAllocator::arbitrate_inports():: completed outport arbitration\n");
 }
 
 /*
@@ -337,6 +433,126 @@ SwitchAllocator::send_allowed(int inport, int invc, int outport, int outvc)
     return true;
 }
 
+
+bool
+SwitchAllocator::valid_send_allowed(int inport, int invc, int outport, int outvc, int evn_class)
+{
+    // Check if outvc needed
+    // Check if credit needed (for multi-flit packet)
+    // Check if ordering violated (in ordered vnet)
+
+    int vnet = get_vnet(invc);
+    bool has_outvc = (outvc != -1);
+    bool has_credit = false;
+
+    int abs_vc_base = vnet*m_vc_per_vnet;
+
+    int rel_invc = invc - abs_vc_base;
+
+    auto output_unit = m_router->getOutputUnit(outport);
+
+    DPRINTF(RubyNetwork,"SwitchAllocator:: valid_send_allowed():: output unit is %s\n",output_unit);
+    if (!has_outvc) {
+        DPRINTF(RubyNetwork,"SwitchAllocator:: valid_send_allowed():: is HEAD/HEAD_TAIL\n");
+
+        // needs outvc
+        // this is only true for HEAD and HEAD_TAIL flits.
+
+        bool has_free_vc = false;
+
+        has_free_vc = output_unit->has_free_valid_evn(vnet, evn_class, rel_invc);
+
+        if (has_free_vc) {
+
+            has_outvc = true;
+
+            // each VC has at least one buffer,
+            // so no need for additional credit check
+            has_credit = true;
+        }
+    } else {
+        DPRINTF(RubyNetwork,"SwitchAllocator:: valid_send_allowed():: is NOT HEAD/HEAD_TAIL\n");
+        has_credit = output_unit->has_credit(outvc);
+    }
+
+    // cannot send if no outvc or no credit.
+    if (!has_outvc || !has_credit)
+        return false;
+
+
+    // // ignore if this is escape VN
+    // // TODO ternary
+    // bool is_escape_vn = false;
+    // if (rel_invc >= m_evn_deadlock_partition) is_escape_vn = true;
+
+    // // TODO make this param
+    // bool no_respect_for_order = true;
+
+    // // TODO ternary
+    // bool check_order = true;
+    // if (is_escape_vn && no_respect_for_order) check_order = false;
+
+    bool same_flow_priority = true;
+
+
+    // protocol ordering check
+    if ((m_router->get_net_ptr())->isVNetOrdered(vnet)) {   // && check_order) {
+        DPRINTF(RubyNetwork,"SwitchAllocator:: valid_send_allowed():: is ordered\n");
+        auto input_unit = m_router->getInputUnit(inport);
+
+        // enqueue time of this flit
+        Tick t_enqueue_time = input_unit->get_enqueue_time(invc);
+
+        // check if any other flit is ready for SA and for same output port
+        // and was enqueued before this flit
+        int vc_base = vnet*m_vc_per_vnet;
+        for (int vc_offset = 0; vc_offset < m_vc_per_vnet; vc_offset++) {
+            int temp_vc = vc_base + vc_offset;
+            if (input_unit->need_stage(temp_vc, SA_, curTick()) &&
+               (input_unit->get_outport(temp_vc) == outport) &&
+               (input_unit->get_enqueue_time(temp_vc) < t_enqueue_time)) {
+
+                DPRINTF(RubyNetwork,"SwitchAllocator:: valid_send_allowed():: vc %d takes precedence.\n",temp_vc);
+
+
+                // ignore for flits not of same flow
+                // if src, dest of current is not equal to src, dest of younger vc
+                //      then ignore priority (ie do not return false) and move along (continue checking)
+                flit* incumbent_flit = input_unit->peekTopFlit(invc);
+                flit* younger_flt = input_unit->peekTopFlit(temp_vc);
+
+                RouteInfo inc_ri = incumbent_flit->get_route();
+                int inc_src_r = inc_ri.src_router;
+                int inc_dest_r = inc_ri.dest_router;
+
+                RouteInfo yng_ri = younger_flt->get_route();
+                int yng_src_r = yng_ri.src_router;
+                int yng_dest_r = yng_ri.dest_router;
+
+                bool same_flow = false;
+                if ((inc_src_r == yng_src_r) && (inc_dest_r == yng_dest_r)){
+                    same_flow = true;
+                    DPRINTF(RubyNetwork,"Priority check: same flow %d->%d. Blocking old vc %d for younger %d\n",inc_src_r,inc_dest_r, invc, temp_vc);
+
+                    // exit early
+                    return false;
+                }
+                else{
+                    DPRINTF(RubyNetwork,"Priority check: different flow %d->%d vs. %d->%d. Allowing older vc %d\n",inc_src_r,inc_dest_r,yng_src_r,yng_dest_r, invc);
+                }
+
+                // remove same_flow shortcircuit
+                // if(same_flow){
+                //     return false;
+                // }
+                
+            }
+        }
+    }
+
+    return true;
+}
+
 // Assign a free VC to the winner of the output port.
 int
 SwitchAllocator::vc_allocate(int outport, int inport, int invc)
@@ -348,6 +564,30 @@ SwitchAllocator::vc_allocate(int outport, int inport, int invc)
     // has to get a valid VC since it checked before performing SA
     assert(outvc != -1);
     m_router->getInputUnit(inport)->grant_outvc(invc, outvc);
+    return outvc;
+}
+
+
+// Assign a free VC to the winner of the output port.
+int
+SwitchAllocator::vc_allocate_valid(int outport, int inport, int invc, int evn_class)
+{
+    // invc is absolute
+    // convert to relative
+    int vnet = get_vnet(invc);
+    int abs_vc_base = vnet*m_vc_per_vnet;
+    int rel_vc = invc - abs_vc_base;
+
+    // Select a free VC from the output port
+    int outvc =
+        m_router->getOutputUnit(outport)->select_free_valid_evn(get_vnet(invc), evn_class, rel_vc);
+
+    // has to get a valid VC since it checked before performing SA
+    assert(outvc != -1);
+    m_router->getInputUnit(inport)->grant_outvc(invc, outvc);
+
+    DPRINTF(RubyNetwork, "SwitchAllocator:: vc_allocate_valid():: Chose outvc %d\n", outvc);
+
     return outvc;
 }
 
@@ -395,6 +635,34 @@ SwitchAllocator::resetStats()
     m_input_arbiter_activity = 0;
     m_output_arbiter_activity = 0;
 }
+// void
+// SwitchAllocator::regStats(){
+
+//     n_routers = m_net_ptr->getNumRouters();
+
+//     for(int s=0; s<n_routers; s++){
+//         m_rejected.push_back(
+//             std::vector<statistics::Scalar* >() );
+
+//         for(int d=0; d<n_routers; n++){
+//             statistics::Scalar* waits = new statistics::Scalar();
+
+//             waits->name(name() + ".router_rejected." + "s" +
+//                     std::to_string(s) + "." + "d" + std::to_string(d));
+//             m_rejected[s].push_back(waits);
+//         }
+
+//     }
+     
+// }
+
+// void
+// SwitchAllocator::collateStats()
+// {
+//     //blank
+// }
+
+
 
 } // namespace garnet
 } // namespace ruby

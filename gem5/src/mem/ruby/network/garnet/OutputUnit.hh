@@ -68,7 +68,9 @@ class OutputUnit : public Consumer
     void increment_credit(int out_vc);
     bool has_credit(int out_vc);
     bool has_free_vc(int vnet);
+    bool has_free_valid_evn(int vnet, int evn_class, int current_vc);
     int select_free_vc(int vnet);
+    int select_free_valid_evn(int vnet, int evn_class, int current_vc);
 
     inline PortDirection get_direction() { return m_direction; }
 
@@ -104,8 +106,23 @@ class OutputUnit : public Consumer
         return m_vc_per_vnet;
     }
 
-    bool functionalRead(Packet *pkt, WriteMask &mask);
     uint32_t functionalWrite(Packet *pkt);
+
+    inline flit*
+    peekTopFlit()
+    {
+        return outBuffer.peekTopFlit();
+    }
+
+    inline bool
+    hasTopFlit()
+    {
+        if (outBuffer.getSize() == 0) return false;
+        return true;
+    }
+
+    Router*
+    get_router();
 
   private:
     Router *m_router;
@@ -119,6 +136,11 @@ class OutputUnit : public Consumer
     flitBuffer outBuffer;
     // vc state of downstream router
     std::vector<OutVcState> outVcState;
+
+    // auto_top
+    // for escape vns
+    int m_evn_deadlock_partition;
+    int m_n_deadlock_free;
 };
 
 } // namespace garnet

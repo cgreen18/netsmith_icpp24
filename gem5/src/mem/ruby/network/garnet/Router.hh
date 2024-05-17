@@ -95,7 +95,7 @@ class Router : public BasicRouter, public Consumer
         m_network_ptr = net_ptr;
     }
 
-    GarnetNetwork* get_net_ptr()                    { return m_network_ptr; }
+    GarnetNetwork* get_net_ptr() { return m_network_ptr; }
 
     InputUnit*
     getInputUnit(unsigned port)
@@ -110,6 +110,25 @@ class Router : public BasicRouter, public Consumer
         assert(port < m_output_unit.size());
         return m_output_unit[port].get();
     }
+
+    // route calculation stuff
+    int
+    calc_next_router(int src, int dest){
+        int n_routers = m_network_ptr->getNumRouters();
+        int index = src*n_routers + dest;
+
+        return m_flat_next_router_map[index];
+    }
+
+    // param getters
+    int
+    get_deadlock_partition() { return m_evn_deadlock_partition; }
+
+    int
+    get_n_deadlock_free() { return m_n_deadlock_free; }
+
+    bool
+    get_use_escape_vns() { return m_use_escape_vns; }
 
     int getBitWidth() { return m_bit_width; }
 
@@ -139,8 +158,11 @@ class Router : public BasicRouter, public Consumer
                                                       aggregate_fault_prob);
     }
 
-    bool functionalRead(Packet *pkt, WriteMask &mask);
     uint32_t functionalWrite(Packet *);
+
+    void set_post_dlock(){ m_post_dlock = true; }
+
+    bool get_post_dlock(){ return m_post_dlock;}
 
   private:
     Cycles m_latency;
@@ -154,6 +176,16 @@ class Router : public BasicRouter, public Consumer
 
     std::vector<std::shared_ptr<InputUnit>> m_input_unit;
     std::vector<std::shared_ptr<OutputUnit>> m_output_unit;
+
+    std::vector<int > m_flat_src_dest_to_evn;
+    std::vector<int > m_flat_next_router_map;
+    int m_evn_deadlock_partition;
+    int m_n_deadlock_free;
+    bool m_use_escape_vns;
+
+    bool m_post_dlock;
+
+
 
     // Statistical variables required for power computations
     statistics::Scalar m_buffer_reads;

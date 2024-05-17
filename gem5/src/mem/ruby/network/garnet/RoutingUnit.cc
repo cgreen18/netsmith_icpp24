@@ -61,6 +61,7 @@ RoutingUnit::addRoute(std::vector<NetDest>& routing_table_entry)
     }
     for (int v = 0; v < routing_table_entry.size(); v++) {
         m_routing_table[v].push_back(routing_table_entry[v]);
+        // DPRINTF(RubyNetwork,"RoutingUnit:: addRoute():: adding entry %s\n",routing_table_entry[v]);
     }
 }
 
@@ -103,6 +104,8 @@ RoutingUnit::lookupRoutingTable(int vnet, NetDest msg_destination)
     // To have a strict ordering between links, they should be given
     // different weights in the topology file
 
+    // DPRINTF(RubyNetwork,"RoutingUnit:: lookupRoutingTable():: \n");
+
     int output_link = -1;
     int min_weight = INFINITE_;
     std::vector<int> output_link_candidates;
@@ -110,11 +113,16 @@ RoutingUnit::lookupRoutingTable(int vnet, NetDest msg_destination)
 
     // Identify the minimum weight among the candidate output links
     for (int link = 0; link < m_routing_table[vnet].size(); link++) {
+
+        DPRINTF(RubyNetwork,"Link %d is %s\n",link, m_outports_idx2dirn[link]);
+
         if (msg_destination.intersectionIsNotEmpty(
             m_routing_table[vnet][link])) {
 
-        if (m_weight_table[link] <= min_weight)
-            min_weight = m_weight_table[link];
+            DPRINTF(RubyNetwork,"RoutingUnit:: lookupRoutingTable():: link %d intersection not empty\n",link);
+
+            if (m_weight_table[link] <= min_weight)
+                min_weight = m_weight_table[link];
         }
     }
 
@@ -126,6 +134,7 @@ RoutingUnit::lookupRoutingTable(int vnet, NetDest msg_destination)
             if (m_weight_table[link] == min_weight) {
                 num_candidates++;
                 output_link_candidates.push_back(link);
+                DPRINTF(RubyNetwork,"RoutingUnit:: lookupRoutingTable():: link %d is candidate\n",link);
             }
         }
     }
@@ -173,6 +182,10 @@ RoutingUnit::outportCompute(RouteInfo route, int inport,
 
     if (route.dest_router == m_router->get_id()) {
 
+        DPRINTF(RubyNetwork,"RoutingUnit:: outportCompute():: at destination. will lookupRoutingTable for route w/ dest %s\n", route.net_dest);
+
+        // return 0;
+
         // Multiple NIs may be connected to this router,
         // all with output port direction = "Local"
         // Get exact outport id from table
@@ -196,6 +209,9 @@ RoutingUnit::outportCompute(RouteInfo route, int inport,
         default: outport =
             lookupRoutingTable(route.vnet, route.net_dest); break;
     }
+
+    DPRINTF(RubyNetwork, "RoutingUnit:: outportCompute():: at end of function, returning outport = %d = %s\n",
+        outport,m_outports_idx2dirn[outport]);
 
     assert(outport != -1);
     return outport;
@@ -267,7 +283,25 @@ RoutingUnit::outportComputeCustom(RouteInfo route,
                                  int inport,
                                  PortDirection inport_dirn)
 {
-    panic("%s placeholder executed", __FUNCTION__);
+
+    int dest_r = route.dest_router;
+    int src_r = route.src_router;
+
+    int next_router = m_router->calc_next_router(src_r, dest_r);
+
+    DPRINTF(RubyNetwork, "RoutingUnit:: outportComputeCustom():: Found next router of %d for self %d along route for %d->...->%d\n",next_router , m_router->get_id(), src_r, dest_r);
+
+
+    // src outport named
+    PortDirection outport_dirn = "src" + std::to_string(m_router->get_id()) + "_dest" + std::to_string(next_router);
+
+    DPRINTF(RubyNetwork, "RoutingUnit:: outportComputeCustom():: Looking for outprt %s (%d) for self=%d and dest_r=%d\n",
+                outport_dirn.c_str(), next_router, m_router->get_id(),dest_r);
+
+    int outport = m_outports_dirn2idx[outport_dirn];
+
+    return outport;
+
 }
 
 } // namespace garnet

@@ -42,10 +42,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/yara/mithuna2/green456/netsmith_autotop/gem5_Garnet2.0_extensions/ext/dsent
+CMAKE_SOURCE_DIR = /home/min/a/green456/netsmith_icpp24/dsent/ext/dsent
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/yara/mithuna2/green456/netsmith_autotop/gem5_Garnet2.0_extensions/build/ext/dsent
+CMAKE_BINARY_DIR = /home/min/a/green456/netsmith_icpp24/dsent/build/ext/dsent
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -72,9 +72,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yara/mithuna2/green456/netsmith_autotop/gem5_Garnet2.0_extensions/build/ext/dsent/CMakeFiles /home/yara/mithuna2/green456/netsmith_autotop/gem5_Garnet2.0_extensions/build/ext/dsent/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/min/a/green456/netsmith_icpp24/dsent/build/ext/dsent/CMakeFiles /home/min/a/green456/netsmith_icpp24/dsent/build/ext/dsent/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yara/mithuna2/green456/netsmith_autotop/gem5_Garnet2.0_extensions/build/ext/dsent/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/min/a/green456/netsmith_icpp24/dsent/build/ext/dsent/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

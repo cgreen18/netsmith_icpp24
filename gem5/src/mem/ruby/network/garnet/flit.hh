@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2008 Princeton University
  * Copyright (c) 2016 Georgia Institute of Technology
+ * Copyright (c) 2024 Purdue University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,6 +108,19 @@ class flit
         }
     }
 
+    // for Sankey
+    int
+    get_first_vnvc(){ return m_first_vnvc; }
+
+    int
+    get_last_vnvc() { return m_last_vnvc; }
+
+    void
+    set_first_vnvc(int val) { m_first_vnvc = val;}
+
+    void
+    set_last_vnvc(int val) { m_last_vnvc = val;}
+
     bool functionalRead(Packet *pkt, WriteMask &mask);
     bool functionalWrite(Packet *pkt);
 
@@ -129,6 +143,10 @@ class flit
     int m_outport;
     Tick src_delay;
     std::pair<flit_stage, Tick> m_stage;
+
+    // for Sankey
+    int m_first_vnvc;
+    int m_last_vnvc;
 };
 
 inline std::ostream&

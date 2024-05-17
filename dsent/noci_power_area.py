@@ -68,6 +68,17 @@ import dsent
 
 # Begin python script
 
+
+print("Usage: %s <simulation directory> " \
+            "<router config file> <link config file>" % sys.argv[0])
+print("If unspecified, <router config file> will default to " \
+        "<simulation directory>/router.cfg and")
+print("<link config file> will default to " \
+        "<simulation directory>/electrical-link.cfg")
+
+print("WARNING: configuration files for DSENT and McPAT are separate. " \
+        "Changes made to one are not reflected in the other.")
+
 from ConfigParser import ConfigParser
 from collections import Counter
 from math import sqrt

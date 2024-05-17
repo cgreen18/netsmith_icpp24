@@ -34,52 +34,75 @@ from m5.objects.Network import RubyNetwork
 from m5.objects.BasicRouter import BasicRouter
 from m5.objects.ClockedObject import ClockedObject
 
-
 class GarnetNetwork(RubyNetwork):
-    type = "GarnetNetwork"
+    type = 'GarnetNetwork'
     cxx_header = "mem/ruby/network/garnet/GarnetNetwork.hh"
-    cxx_class = "gem5::ruby::garnet::GarnetNetwork"
+    cxx_class = 'gem5::ruby::garnet::GarnetNetwork'
 
-    num_rows = Param.Int(0, "number of rows if 2D (mesh/torus/..) topology")
+    num_rows = Param.Int(0, "number of rows if 2D (mesh/torus/..) topology");
     ni_flit_size = Param.UInt32(16, "network interface flit size in bytes")
-    vcs_per_vnet = Param.UInt32(4, "virtual channels per virtual network")
-    buffers_per_data_vc = Param.UInt32(4, "buffers per data virtual channel")
-    buffers_per_ctrl_vc = Param.UInt32(1, "buffers per ctrl virtual channel")
-    routing_algorithm = Param.Int(0, "0: Weight-based Table, 1: XY, 2: Custom")
-    enable_fault_model = Param.Bool(False, "enable network fault model")
-    fault_model = Param.FaultModel(NULL, "network fault model")
-    garnet_deadlock_threshold = Param.UInt32(
-        50000, "network-level deadlock threshold"
-    )
+    vcs_per_vnet = Param.UInt32(4, "virtual channels per virtual network");
+    buffers_per_data_vc = Param.UInt32(5, "buffers per data virtual channel");
+    buffers_per_ctrl_vc = Param.UInt32(1, "buffers per ctrl virtual channel");
+    routing_algorithm = Param.Int(0,
+        "0: Weight-based Table, 1: XY, 2: Custom");
+    enable_fault_model = Param.Bool(False, "enable network fault model");
+    fault_model = Param.FaultModel(NULL, "network fault model");
+    garnet_deadlock_threshold = Param.UInt32(50000,
+                              "network-level deadlock threshold")
+
+    # auto_top
+    # for escape vns
+    use_escape_vns = Param.Bool(False, "Whether to use escape VNs")
+    n_deadlock_free = Param.Int32(1, "Number of deadlock free VNs per VN class")
+    evn_deadlock_partition = Param.Int32(2, "Number of free/no guarantee VNs. Value is equal to first escape VN")
+    min_n_deadlock_free = Param.Int32(2, "Minimum number of deadlock free VNs required. Used for assertion")
+    # synth_traffic = Param.Bool(Parent.synth_traffic,"Whether this netowrk is serving synthetic traffic. (changes address translation)")
+
+    # same across all routers
+    # hardcoded
+    # flat_src_dest_to_evn = VectorParam.Int32([0]*400, "2D src, dest indexed => flattened 400 20*src+dest indexed")
+    flat_src_dest_to_evn = VectorParam.Int32( [],"2D src, dest indexed => flattened 400 20*src+dest indexed")
 
 
 class GarnetNetworkInterface(ClockedObject):
-    type = "GarnetNetworkInterface"
-    cxx_class = "gem5::ruby::garnet::NetworkInterface"
+    type = 'GarnetNetworkInterface'
+    cxx_class = 'gem5::ruby::garnet::NetworkInterface'
     cxx_header = "mem/ruby/network/garnet/NetworkInterface.hh"
 
     id = Param.UInt32("ID in relation to other network interfaces")
-    vcs_per_vnet = Param.UInt32(
-        Parent.vcs_per_vnet, "virtual channels per virtual network"
-    )
-    virt_nets = Param.UInt32(
-        Parent.number_of_virtual_networks, "number of virtual networks"
-    )
-    garnet_deadlock_threshold = Param.UInt32(
-        Parent.garnet_deadlock_threshold, "network-level deadlock threshold"
-    )
+    vcs_per_vnet = Param.UInt32(Parent.vcs_per_vnet,
+                             "virtual channels per virtual network")
+    virt_nets = Param.UInt32(Parent.number_of_virtual_networks,
+                          "number of virtual networks")
+    garnet_deadlock_threshold = Param.UInt32(Parent.garnet_deadlock_threshold,
+                                      "network-level deadlock threshold")
 
+    use_escape_vns = Param.Bool(Parent.use_escape_vns, "Whether to use escape VNs")
+    n_deadlock_free = Param.Int32(Parent.n_deadlock_free, "Number of deadlock free VNs per VN class")
+    evn_deadlock_partition = Param.Int32(Parent.evn_deadlock_partition, "Number of free/no guarantee VNs")
+    min_n_deadlock_free = Param.Int32(Parent.min_n_deadlock_free, "Minimum number of deadlock free VNs required. Used for assertion")
+    synth_traffic = Param.Bool(Parent.synth_traffic,"Whether this netowrk is serving synthetic traffic. Changes address translation")
 
 class GarnetRouter(BasicRouter):
-    type = "GarnetRouter"
-    cxx_class = "gem5::ruby::garnet::Router"
+    type = 'GarnetRouter'
+    cxx_class = 'gem5::ruby::garnet::Router'
     cxx_header = "mem/ruby/network/garnet/Router.hh"
-    vcs_per_vnet = Param.UInt32(
-        Parent.vcs_per_vnet, "virtual channels per virtual network"
-    )
-    virt_nets = Param.UInt32(
-        Parent.number_of_virtual_networks, "number of virtual networks"
-    )
-    width = Param.UInt32(
-        Parent.ni_flit_size, "bit width supported by the router"
-    )
+    vcs_per_vnet = Param.UInt32(Parent.vcs_per_vnet,
+                              "virtual channels per virtual network")
+    virt_nets = Param.UInt32(Parent.number_of_virtual_networks,
+                          "number of virtual networks")
+    width = Param.UInt32(Parent.ni_flit_size,
+                          "bit width supported by the router")
+
+    # auto_top
+    # for escape vns
+    use_escape_vns = Param.Bool(Parent.use_escape_vns, "Whether to use escape VNs")
+    n_deadlock_free = Param.Int32(Parent.n_deadlock_free, "Number of deadlock free VNs per VN class")
+    evn_deadlock_partition = Param.Int32(Parent.evn_deadlock_partition, "Number of free/no guarantee VNs")
+    min_n_deadlock_free = Param.Int32(Parent.min_n_deadlock_free, "Minimum number of deadlock free VNs required. Used for assertion")
+    synth_traffic = Param.Bool(Parent.synth_traffic,"Whether this netowrk is serving synthetic traffic. Changes address translation")
+
+    # no default size/values
+    flat_next_router_map = VectorParam.Int32([],"2D src, dest indexed => flattened 400 20*src+dest indexed")
+    flat_src_dest_to_evn = VectorParam.Int32(Parent.flat_src_dest_to_evn, "2D src, dest indexed => flattened 400 20*src+dest indexed")

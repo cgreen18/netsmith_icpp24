@@ -64,7 +64,9 @@ class SwitchAllocator : public Consumer
     void arbitrate_inports();
     void arbitrate_outports();
     bool send_allowed(int inport, int invc, int outport, int outvc);
+    bool valid_send_allowed(int inport, int invc, int outport, int outvc, int evn_class);
     int vc_allocate(int outport, int inport, int invc);
+    int vc_allocate_valid(int outport, int inport, int invc, int evn_class);
 
     inline double
     get_input_arbiter_activity()
@@ -79,6 +81,14 @@ class SwitchAllocator : public Consumer
 
     void resetStats();
 
+    // // Stats
+    // void collateStats();
+    // void regStats();
+    // void resetStats();
+
+    // // for waiting
+    // std::vector<std::vector<statistics::Scalar *>> m_rejected;
+
   private:
     int m_num_inports, m_num_outports;
     int m_num_vcs, m_vc_per_vnet;
@@ -90,6 +100,10 @@ class SwitchAllocator : public Consumer
     std::vector<int> m_round_robin_inport;
     std::vector<int> m_port_requests;
     std::vector<int> m_vc_winners;
+
+    bool m_use_escape_vns;
+    int m_evn_deadlock_partition;
+    int m_n_deadlock_free;
 };
 
 } // namespace garnet

@@ -95,7 +95,13 @@ class VirtualChannel
         return inputBuffer.getTopFlit();
     }
 
-    bool functionalRead(Packet *pkt, WriteMask &mask);
+    inline bool
+    hasTopFlit()
+    {
+        if (inputBuffer.getSize() == 0) return false;
+        return true;
+    }
+
     uint32_t functionalWrite(Packet *pkt);
 
   private:

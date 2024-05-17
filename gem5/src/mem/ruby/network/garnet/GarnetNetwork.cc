@@ -62,7 +62,8 @@ namespace garnet
  */
 
 GarnetNetwork::GarnetNetwork(const Params &p)
-    : Network(p)
+    : Network(p),
+      m_flat_src_dest_to_evn(p.flat_src_dest_to_evn)
 {
     m_num_rows = p.num_rows;
     m_ni_flit_size = p.ni_flit_size;
@@ -71,6 +72,25 @@ GarnetNetwork::GarnetNetwork(const Params &p)
     m_buffers_per_ctrl_vc = p.buffers_per_ctrl_vc;
     m_routing_algorithm = p.routing_algorithm;
     m_next_packet_id = 0;
+
+    // auto_top
+    // for escape vns
+    m_vcs_per_flow_vnet = p.vcs_per_vnet;
+    m_use_escape_vns = p.use_escape_vns;
+    m_n_deadlock_free = p.n_deadlock_free;
+    m_evn_deadlock_partition = p.evn_deadlock_partition;
+    m_min_n_deadlock_free = p.min_n_deadlock_free;
+    m_post_dlock = false;
+
+    DPRINTF(RubyNetwork,"GarnetNetwork:: GarnetNetwork():: rx params: use_escape_vns %d, # dl free %d, dl partition %d\n",m_use_escape_vns,m_n_deadlock_free,m_evn_deadlock_partition);
+
+    int which = 0;
+    for (auto entry : m_flat_src_dest_to_evn){
+        DPRINTF(RubyNetwork, "GarnetNetwork:: GarnetNetwork():: which %d : val=%d\n",which, entry);
+        which ++;
+    }
+
+    assert( m_vcs_per_flow_vnet - m_evn_deadlock_partition == m_min_n_deadlock_free*m_n_deadlock_free);
 
     m_enable_fault_model = p.enable_fault_model;
     if (m_enable_fault_model)
@@ -101,6 +121,7 @@ GarnetNetwork::GarnetNetwork(const Params &p)
         NetworkInterface *ni = safe_cast<NetworkInterface *>(*i);
         m_nis.push_back(ni);
         ni->init_net_ptr(this);
+        ni->init_deadlock_params(m_evn_deadlock_partition, m_n_deadlock_free, m_use_escape_vns);
     }
 
     // Print Garnet version
@@ -197,26 +218,22 @@ GarnetNetwork::makeExtInLink(NodeID global_src, SwitchID dest, BasicLink* link,
     if (garnet_link->extBridgeEn) {
         DPRINTF(RubyNetwork, "Enable external bridge for %s\n",
             garnet_link->name());
-        NetworkBridge *n_bridge = garnet_link->extNetBridge[LinkDirection_In];
         m_nis[local_src]->
-        addOutPort(n_bridge,
+        addOutPort(garnet_link->extNetBridge[LinkDirection_In],
                    garnet_link->extCredBridge[LinkDirection_In],
                    dest, m_routers[dest]->get_vc_per_vnet());
-        m_networkbridges.push_back(n_bridge);
     } else {
         m_nis[local_src]->addOutPort(net_link, credit_link, dest,
             m_routers[dest]->get_vc_per_vnet());
     }
 
     if (garnet_link->intBridgeEn) {
-        DPRINTF(RubyNetwork, "Enable internal bridge for %s\n",
-            garnet_link->name());
-        NetworkBridge *n_bridge = garnet_link->intNetBridge[LinkDirection_In];
+        // DPRINTF(RubyNetwork, "Enable internal bridge for %s\n",
+        //     garnet_link->name());
         m_routers[dest]->
             addInPort(dst_inport_dirn,
-                      n_bridge,
+                      garnet_link->intNetBridge[LinkDirection_In],
                       garnet_link->intCredBridge[LinkDirection_In]);
-        m_networkbridges.push_back(n_bridge);
     } else {
         m_routers[dest]->addInPort(dst_inport_dirn, net_link, credit_link);
     }
@@ -270,10 +287,9 @@ GarnetNetwork::makeExtOutLink(SwitchID src, NodeID global_dest,
     if (garnet_link->extBridgeEn) {
         DPRINTF(RubyNetwork, "Enable external bridge for %s\n",
             garnet_link->name());
-        NetworkBridge *n_bridge = garnet_link->extNetBridge[LinkDirection_Out];
         m_nis[local_dest]->
-            addInPort(n_bridge, garnet_link->extCredBridge[LinkDirection_Out]);
-        m_networkbridges.push_back(n_bridge);
+            addInPort(garnet_link->extNetBridge[LinkDirection_Out],
+                      garnet_link->extCredBridge[LinkDirection_Out]);
     } else {
         m_nis[local_dest]->addInPort(net_link, credit_link);
     }
@@ -281,14 +297,12 @@ GarnetNetwork::makeExtOutLink(SwitchID src, NodeID global_dest,
     if (garnet_link->intBridgeEn) {
         DPRINTF(RubyNetwork, "Enable internal bridge for %s\n",
             garnet_link->name());
-        NetworkBridge *n_bridge = garnet_link->intNetBridge[LinkDirection_Out];
         m_routers[src]->
             addOutPort(src_outport_dirn,
-                       n_bridge,
+                       garnet_link->intNetBridge[LinkDirection_Out],
                        routing_table_entry, link->m_weight,
                        garnet_link->intCredBridge[LinkDirection_Out],
                        m_routers[src]->get_vc_per_vnet());
-        m_networkbridges.push_back(n_bridge);
     } else {
         m_routers[src]->
             addOutPort(src_outport_dirn, net_link,
@@ -339,10 +353,8 @@ GarnetNetwork::makeInternalLink(SwitchID src, SwitchID dest, BasicLink* link,
     if (garnet_link->dstBridgeEn) {
         DPRINTF(RubyNetwork, "Enable destination bridge for %s\n",
             garnet_link->name());
-        NetworkBridge *n_bridge = garnet_link->dstNetBridge;
-        m_routers[dest]->addInPort(dst_inport_dirn, n_bridge,
-                                   garnet_link->dstCredBridge);
-        m_networkbridges.push_back(n_bridge);
+        m_routers[dest]->addInPort(dst_inport_dirn,
+            garnet_link->dstNetBridge, garnet_link->dstCredBridge);
     } else {
         m_routers[dest]->addInPort(dst_inport_dirn, net_link, credit_link);
     }
@@ -350,13 +362,11 @@ GarnetNetwork::makeInternalLink(SwitchID src, SwitchID dest, BasicLink* link,
     if (garnet_link->srcBridgeEn) {
         DPRINTF(RubyNetwork, "Enable source bridge for %s\n",
             garnet_link->name());
-        NetworkBridge *n_bridge = garnet_link->srcNetBridge;
         m_routers[src]->
-            addOutPort(src_outport_dirn, n_bridge,
+            addOutPort(src_outport_dirn, garnet_link->srcNetBridge,
                        routing_table_entry,
                        link->m_weight, garnet_link->srcCredBridge,
                        m_routers[dest]->get_vc_per_vnet());
-        m_networkbridges.push_back(n_bridge);
     } else {
         m_routers[src]->addOutPort(src_outport_dirn, net_link,
                         routing_table_entry,
@@ -379,6 +389,15 @@ GarnetNetwork::get_router_id(int global_ni, int vnet)
     NodeID local_ni = getLocalNodeID(global_ni);
 
     return m_nis[local_ni]->get_router_id(vnet);
+}
+
+int
+GarnetNetwork::get_evn_for_src_dest(int src, int dest)
+{
+    DPRINTF(RubyNetwork,"get_evn_for_src_dest():: src=%d, dest=%d\n",src,dest);
+    int n_routers = getNumRouters();
+    int index = src*n_routers + dest;
+    return m_flat_src_dest_to_evn[index];
 }
 
 void
@@ -548,6 +567,71 @@ GarnetNetwork::regStats()
             m_ctrl_traffic_distribution[source].push_back(ctrl_packets);
         }
     }
+
+    // for Sankey
+    int n_total_vcs = m_virtual_networks* m_vcs_per_flow_vnet;
+
+    for(int source=0; source<n_total_vcs; source++){
+        m_sankey.push_back(
+            std::vector<statistics::Scalar* >() );
+
+        m_dlock_sankey.push_back(
+            std::vector<statistics::Scalar* >() );
+
+        for(int dest=0; dest<n_total_vcs; dest++){
+            statistics::Scalar* vnvc_freq = new statistics::Scalar();
+
+            vnvc_freq->name(name() + ".sankey." + "vcvn" +
+                    std::to_string(source) + "." + "vcvn" + std::to_string(dest));
+            m_sankey[source].push_back(vnvc_freq);
+
+            // after deadlock detected
+            statistics::Scalar* vnvc_freq_dlock = new statistics::Scalar();
+
+            vnvc_freq_dlock->name(name() + ".dlock_sankey." + "vcvn" +
+                    std::to_string(source) + "." + "vcvn" + std::to_string(dest));
+            m_dlock_sankey[source].push_back(vnvc_freq_dlock);
+        }
+
+    }
+
+    int n_routers = m_routers.size();
+
+    for(int source=0; source<n_routers; source++){
+
+        m_ni_rejected.push_back(
+            std::vector<statistics::Scalar* >() );
+
+        m_r_rejected.push_back(
+            std::vector<statistics::Scalar* >() );
+
+        for(int dest=0; dest<n_routers; dest++){
+            statistics::Scalar* n_ni_rejected = new statistics::Scalar();
+
+            n_ni_rejected->name(name() + ".ni_rejected." + "s" +
+                    std::to_string(source) + "." + "d" + std::to_string(dest));
+            m_ni_rejected[source].push_back(n_ni_rejected);
+
+            statistics::Scalar* n_r_rejected = new statistics::Scalar();
+
+            n_r_rejected->name(name() + ".r_rejected." + "s" +
+                    std::to_string(source) + "." + "d" + std::to_string(dest));
+            m_r_rejected[source].push_back(n_r_rejected);
+        }
+    }
+
+    
+    for(int i=0;i<n_routers;i++){
+        m_dlock_srcdest.push_back(
+            std::vector<statistics::Scalar* >() );
+        for(int j=0;j<n_routers;j++){
+            statistics::Scalar* dl_sd = new statistics::Scalar();
+
+            dl_sd->name(name() + ".dlock_srcdest." + "n" +
+                    std::to_string(i) + "." + "n" + std::to_string(j));
+            m_dlock_srcdest[i].push_back(dl_sd);
+        }
+    }
 }
 
 void
@@ -574,6 +658,8 @@ GarnetNetwork::collateStats()
         for (int j = 0; j < vc_load.size(); j++) {
             m_average_vc_load[j] += ((double)vc_load[j] / time_delta);
         }
+
+        // int queries = m_networklinks[i]->getNQueries();
     }
 
     // Ask the routers to collate their statistics
@@ -602,6 +688,24 @@ GarnetNetwork::print(std::ostream& out) const
     out << "[GarnetNetwork]";
 }
 
+Router*
+GarnetNetwork::get_router_ptr(int id){
+    return m_routers[id];
+}
+
+int
+GarnetNetwork::get_post_dlock_of_router(int id){
+    return m_routers[id]->get_post_dlock();
+}
+
+void
+GarnetNetwork::set_post_dlock_of_router(int id){
+    m_routers[id]->set_post_dlock();
+
+    // also self
+    m_post_dlock = true;
+}
+
 void
 GarnetNetwork::update_traffic_distribution(RouteInfo route)
 {
@@ -613,33 +717,6 @@ GarnetNetwork::update_traffic_distribution(RouteInfo route)
         (*m_data_traffic_distribution[src_node][dest_node])++;
     else
         (*m_ctrl_traffic_distribution[src_node][dest_node])++;
-}
-
-bool
-GarnetNetwork::functionalRead(Packet *pkt, WriteMask &mask)
-{
-    bool read = false;
-    for (unsigned int i = 0; i < m_routers.size(); i++) {
-        if (m_routers[i]->functionalRead(pkt, mask))
-            read = true;
-    }
-
-    for (unsigned int i = 0; i < m_nis.size(); ++i) {
-        if (m_nis[i]->functionalRead(pkt, mask))
-            read = true;
-    }
-
-    for (unsigned int i = 0; i < m_networklinks.size(); ++i) {
-        if (m_networklinks[i]->functionalRead(pkt, mask))
-            read = true;
-    }
-
-    for (unsigned int i = 0; i < m_networkbridges.size(); ++i) {
-        if (m_networkbridges[i]->functionalRead(pkt, mask))
-            read = true;
-    }
-
-    return read;
 }
 
 uint32_t

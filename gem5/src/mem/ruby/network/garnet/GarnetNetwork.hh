@@ -55,7 +55,6 @@ namespace garnet
 class NetworkInterface;
 class Router;
 class NetworkLink;
-class NetworkBridge;
 class CreditLink;
 
 class GarnetNetwork : public Network
@@ -94,6 +93,7 @@ class GarnetNetwork : public Network
     }
     int getNumRouters();
     int get_router_id(int ni, int vnet);
+    int get_evn_for_src_dest(int src, int dest);
 
 
     // Methods used by Topology to setup the network
@@ -106,7 +106,6 @@ class GarnetNetwork : public Network
                           PortDirection src_outport_dirn,
                           PortDirection dest_inport_dirn);
 
-    bool functionalRead(Packet *pkt, WriteMask &mask);
     //! Function for performing a functional write. The return value
     //! indicates the number of messages that were written.
     uint32_t functionalWrite(Packet *pkt);
@@ -154,6 +153,49 @@ class GarnetNetwork : public Network
         m_total_hops += hops;
     }
 
+    void
+    increment_sankey(int a, int b)
+    {
+        *(m_sankey[a][b]) += 1;
+    }
+
+    void
+    increment_ni_rejected(int a, int b)
+    {
+        *(m_ni_rejected[a][b]) += 1;
+    }
+
+    void
+    increment_r_rejected(int a, int b)
+    {
+        *(m_r_rejected[a][b]) += 1;
+    }
+
+    void
+    increment_dlock_sankey(int a, int b)
+    {
+        *(m_dlock_sankey[a][b]) += 1;
+    }
+
+    void
+    increment_dlock_srcdest(int a, int b){
+        *(m_dlock_srcdest[a][b]) += 1;
+    }
+
+    Router *
+    get_router_ptr(int id);
+
+
+    int get_post_dlock_of_router(int id);
+
+    void
+    set_post_dlock_of_router(int id);
+
+    bool
+    is_post_dlock(){
+        return m_post_dlock;
+    }
+
     void update_traffic_distribution(RouteInfo route);
     int getNextPacketID() { return m_next_packet_id++; }
 
@@ -167,6 +209,14 @@ class GarnetNetwork : public Network
     uint32_t m_buffers_per_data_vc;
     int m_routing_algorithm;
     bool m_enable_fault_model;
+
+    bool m_use_escape_vns;
+    int m_vcs_per_flow_vnet;
+    int m_n_deadlock_free;
+    int m_evn_deadlock_partition;
+    int m_min_n_deadlock_free;
+    std::vector<int > m_flat_src_dest_to_evn;
+    bool m_post_dlock;
 
     // Statistical variables
     statistics::Vector m_packets_received;
@@ -203,6 +253,14 @@ class GarnetNetwork : public Network
     std::vector<std::vector<statistics::Scalar *>> m_data_traffic_distribution;
     std::vector<std::vector<statistics::Scalar *>> m_ctrl_traffic_distribution;
 
+    // for sankey
+    // 2D mat of scalars
+    std::vector<std::vector<statistics::Scalar *>> m_sankey;
+    std::vector<std::vector<statistics::Scalar *>> m_dlock_sankey;
+    std::vector<std::vector<statistics::Scalar *>> m_dlock_srcdest;
+    std::vector<std::vector<statistics::Scalar *>> m_ni_rejected;
+    std::vector<std::vector<statistics::Scalar *>> m_r_rejected;
+
   private:
     GarnetNetwork(const GarnetNetwork& obj);
     GarnetNetwork& operator=(const GarnetNetwork& obj);
@@ -210,7 +268,6 @@ class GarnetNetwork : public Network
     std::vector<VNET_type > m_vnet_type;
     std::vector<Router *> m_routers;   // All Routers in Network
     std::vector<NetworkLink *> m_networklinks; // All flit links in the network
-    std::vector<NetworkBridge *> m_networkbridges; // All network bridges
     std::vector<CreditLink *> m_creditlinks; // All credit links in the network
     std::vector<NetworkInterface *> m_nis;   // All NI's in Network
     int m_next_packet_id; // static vairable for packet id allocation

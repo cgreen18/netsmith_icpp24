@@ -56,6 +56,10 @@ OutputUnit::OutputUnit(int id, PortDirection direction, Router *router,
     for (int i = 0; i < m_num_vcs; i++) {
         outVcState.emplace_back(i, m_router->get_net_ptr(), consumerVcs);
     }
+
+    // borrow params from router
+    m_evn_deadlock_partition = m_router->get_deadlock_partition();
+    m_n_deadlock_free = m_router->get_n_deadlock_free();
 }
 
 void
@@ -97,8 +101,69 @@ OutputUnit::has_credit(int out_vc)
 bool
 OutputUnit::has_free_vc(int vnet)
 {
+
+    DPRINTF(RubyNetwork, "OutputUnit:: has_free_VC():: in function??\n");
+
     int vc_base = vnet*m_vc_per_vnet;
     for (int vc = vc_base; vc < vc_base + m_vc_per_vnet; vc++) {
+        if (is_vc_idle(vc, curTick()))
+            return true;
+    }
+
+
+
+    return false;
+}
+
+// Check if the output port (i.e., input port at next router) has free VCs.
+bool
+OutputUnit::has_free_valid_evn(int vnet, int evn_class, int current_vc)
+{
+    // absolute vc across all req/resp type VNs
+    int abs_vc_base = vnet*m_vc_per_vnet;
+
+
+    bool restricted_to_escape = false;
+
+    // assume current_vc is relative
+
+    if (current_vc >= m_evn_deadlock_partition){
+        restricted_to_escape = true;
+        DPRINTF(RubyNetwork, "OutputUnit:: has_free_valid_evn():: current_vc = %d (abs %d) is in escape VNs ( >= %d)\n", current_vc, current_vc + abs_vc_base, m_evn_deadlock_partition);
+    }
+    else{
+        DPRINTF(RubyNetwork, "OutputUnit:: has_free_valid_evn():: current_vc = %d (abs %d) is NOT in escape VNs ( < %d)\n", current_vc, current_vc + abs_vc_base, m_evn_deadlock_partition);
+    }
+
+    // if not currently in an escape VN then
+    if (!restricted_to_escape){
+        // check the no guarantee VCs
+        // [0,m_evn_deadlock_partition)
+        for (int i = 0; i < m_evn_deadlock_partition; i++) {
+            int vc = abs_vc_base + i;
+            DPRINTF(RubyNetwork, "OutputUnit:: has_free_valid_evn():: checking vc = %d\n", vc);
+            if (is_vc_idle(vc, curTick()))
+                return true;
+        }
+    }
+
+    // else, check DL-free escape VNs
+
+    // DL-free VNs are blocked
+    // class 0 : [m_evn_deadlock_partition, m_evn_deadlock_partition + m_n_deadlock_free)
+    // class 1 : [m_evn_deadlock_partition + m_n_deadlock_free, m_evn_deadlock_partition + 2*m_n_deadlock_free)
+    // ...
+
+    // this_class (arg) : [m_evn_deadlock_partition + evn_class*m_n_deadlock_free, m_evn_deadlock_partition + (evn_class + 1)*m_n_deadlock_free)
+
+    // iter through all avail
+    // will be m_n_deadlock_free for this class
+
+    int class_rel_vc_base = m_evn_deadlock_partition + evn_class*m_n_deadlock_free;
+
+    for(int i = 0; i < m_n_deadlock_free; i++){
+        int vc = abs_vc_base + class_rel_vc_base + i;
+        DPRINTF(RubyNetwork, "OutputUnit:: has_free_valid_evn():: checking vc = %d\n", vc);
         if (is_vc_idle(vc, curTick()))
             return true;
     }
@@ -121,6 +186,67 @@ OutputUnit::select_free_vc(int vnet)
     return -1;
 }
 
+// Check if the output port (i.e., input port at next router) has free VCs.
+int
+OutputUnit::select_free_valid_evn(int vnet, int evn_class, int current_vc)
+{
+    // absolute vc across all req/resp type VNs
+    int abs_vc_base = vnet*m_vc_per_vnet;
+
+
+    bool restricted_to_escape = false;
+
+    // assume current_vc is relative
+
+    if (current_vc >= m_evn_deadlock_partition){
+        restricted_to_escape = true;
+        DPRINTF(RubyNetwork, "OutputUnit:: select_free_valid_evn():: current_vc = %d (abs %d) is in escape VNs ( >= %d)\n", current_vc, current_vc + abs_vc_base, m_evn_deadlock_partition);
+    }
+    else{
+        DPRINTF(RubyNetwork, "OutputUnit:: select_free_valid_evn():: current_vc = %d (abs %d) is NOT in escape VNs ( < %d)\n", current_vc, current_vc + abs_vc_base, m_evn_deadlock_partition);
+    }
+
+    // if not currently in an escape VN then
+    if (!restricted_to_escape){
+        // check the no guarantee VCs
+        // [0,m_evn_deadlock_partition)
+        for (int i = 0; i < m_evn_deadlock_partition; i++) {
+            int vc = abs_vc_base + i;
+            if (is_vc_idle(vc, curTick())) {
+                outVcState[vc].setState(ACTIVE_, curTick());
+                return vc;
+            }
+        }
+    }
+
+    // else, check DL-free escape VNs
+
+    // DL-free VNs are blocked
+    // class 0 : [m_evn_deadlock_partition, m_evn_deadlock_partition + m_n_deadlock_free)
+    // class 1 : [m_evn_deadlock_partition + m_n_deadlock_free, m_evn_deadlock_partition + 2*m_n_deadlock_free)
+    // ...
+
+    // this_class (arg) : [m_evn_deadlock_partition + evn_class*m_n_deadlock_free, m_evn_deadlock_partition + (evn_class + 1)*m_n_deadlock_free)
+
+    // iter through all avail
+    // will be m_n_deadlock_free for this class
+
+    int class_rel_vc_base = m_evn_deadlock_partition + evn_class*m_n_deadlock_free;
+
+    DPRINTF(RubyNetwork, "OutputUnit:: select_free_valid_evn():: evn_class %d is restricted to vcs [%d,%d) (abs [%d,%d))", evn_class, class_rel_vc_base, class_rel_vc_base + m_n_deadlock_free, abs_vc_base + class_rel_vc_base, abs_vc_base + class_rel_vc_base + m_n_deadlock_free );
+
+    for(int i = 0; i < m_n_deadlock_free; i++){
+        int vc = abs_vc_base + class_rel_vc_base + i;
+
+        if (is_vc_idle(vc, curTick())) {
+            outVcState[vc].setState(ACTIVE_, curTick());
+            return vc;
+        }
+
+    }
+
+    return -1;
+}
 /*
  * The wakeup function of the OutputUnit reads the credit signal from the
  * downstream router for the output VC (i.e., input VC at downstream router).
@@ -172,16 +298,15 @@ OutputUnit::insert_flit(flit *t_flit)
     m_out_link->scheduleEventAbsolute(m_router->clockEdge(Cycles(1)));
 }
 
-bool
-OutputUnit::functionalRead(Packet *pkt, WriteMask &mask)
-{
-    return outBuffer.functionalRead(pkt, mask);
-}
-
 uint32_t
 OutputUnit::functionalWrite(Packet *pkt)
 {
     return outBuffer.functionalWrite(pkt);
+}
+
+Router*
+OutputUnit::get_router(){
+    return m_router;
 }
 
 } // namespace garnet

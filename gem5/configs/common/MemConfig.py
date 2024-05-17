@@ -37,8 +37,8 @@ import m5.objects
 from common import ObjectList
 from common import HMC
 
-
-def create_mem_intf(intf, r, i, intlv_bits, intlv_size, xor_low_bit):
+def create_mem_intf(intf, r, i, intlv_bits, intlv_size,
+                    xor_low_bit):
     """
     Helper function for creating a single memoy controller from the given
     options.  This function is invoked multiple times in config_mem function
@@ -46,7 +46,6 @@ def create_mem_intf(intf, r, i, intlv_bits, intlv_size, xor_low_bit):
     """
 
     import math
-
     intlv_low_bit = int(math.log(intlv_size, 2))
 
     # Use basic hashing for the channel selection, and preferably use
@@ -54,7 +53,7 @@ def create_mem_intf(intf, r, i, intlv_bits, intlv_size, xor_low_bit):
     # the details of the caches here, make an educated guess. 4 MByte
     # 4-way associative with 64 byte cache lines is 6 offset bits and
     # 14 index bits.
-    if xor_low_bit:
+    if (xor_low_bit):
         xor_high_bit = xor_low_bit + intlv_bits - 1
     else:
         xor_high_bit = 0
@@ -68,15 +67,13 @@ def create_mem_intf(intf, r, i, intlv_bits, intlv_size, xor_low_bit):
         # If the channel bits are appearing after the column
         # bits, we need to add the appropriate number of bits
         # for the row buffer size
-        if interface.addr_mapping.value == "RoRaBaChCo":
+        if interface.addr_mapping.value == 'RoRaBaChCo':
             # This computation only really needs to happen
             # once, but as we rely on having an instance we
             # end up having to repeat it for each and every
             # one
-            rowbuffer_size = (
-                interface.device_rowbuffer_size.value
-                * interface.devices_per_rank.value
-            )
+            rowbuffer_size = interface.device_rowbuffer_size.value * \
+                interface.devices_per_rank.value
 
             intlv_low_bit = int(math.log(rowbuffer_size, 2))
 
@@ -86,7 +83,7 @@ def create_mem_intf(intf, r, i, intlv_bits, intlv_size, xor_low_bit):
         # If the channel bits are appearing after the low order
         # address bits (buffer bits), we need to add the appropriate
         # number of bits for the buffer size
-        if interface.addr_mapping.value == "RoRaBaChCo":
+        if interface.addr_mapping.value == 'RoRaBaChCo':
             # This computation only really needs to happen
             # once, but as we rely on having an instance we
             # end up having to repeat it for each and every
@@ -97,14 +94,52 @@ def create_mem_intf(intf, r, i, intlv_bits, intlv_size, xor_low_bit):
 
     # We got all we need to configure the appropriate address
     # range
-    interface.range = m5.objects.AddrRange(
-        r.start,
-        size=r.size(),
-        intlvHighBit=intlv_low_bit + intlv_bits - 1,
-        xorHighBit=xor_high_bit,
-        intlvBits=intlv_bits,
-        intlvMatch=i,
-    )
+    interface.range = m5.objects.AddrRange(r.start, size = r.size(),
+                                      intlvHighBit = \
+                                          intlv_low_bit + intlv_bits - 1,
+                                      xorHighBit = xor_high_bit,
+                                      intlvBits = intlv_bits,
+                                      intlvMatch = i)
+    return interface
+
+
+
+def create_blocked_mem_intf(intf, r, num_blocks, index):
+    """
+    Helper function for creating a single memoy controller from the given
+    options.  This function is invoked multiple times in config_mem function
+    to create an array of controllers.
+    """
+
+    import math
+   
+    # Create an instance so we can figure out the address
+    # mapping and row-buffer size
+    interface = intf()
+
+    size = r.size()
+
+    per_block = size // num_blocks
+    # print(f' size // num_blocks = { size // num_blocks}')
+    # print(f' size % num_blocks = { size % num_blocks}')
+
+    block_start = index*per_block
+    block_end = (index + 1)*per_block
+
+    # print(f' start = {block_start}')
+    # print(f' end = {block_end}')
+
+    masks = []
+    
+
+    interface.range = m5.objects.AddrRange(start=block_start, end=block_end)
+    # interface.range = m5.objects.AddrRange(start, size = per_block,
+                                    
+    #                                   intlvHighBit = 1,
+    #                                   xorHighBit = 1,
+    #                                   intlvBits = 1,
+    #                                   intlvMatch = 1)
+    
     return interface
 
 
@@ -131,9 +166,8 @@ def config_mem(options, system):
 
     # Optional options
     opt_tlm_memory = getattr(options, "tlm_memory", None)
-    opt_external_memory_system = getattr(
-        options, "external_memory_system", None
-    )
+    opt_external_memory_system = getattr(options, "external_memory_system",
+                                         None)
     opt_elastic_trace_en = getattr(options, "elastic_trace_en", False)
     opt_mem_ranks = getattr(options, "mem_ranks", None)
     opt_nvm_ranks = getattr(options, "nvm_ranks", None)
@@ -141,6 +175,9 @@ def config_mem(options, system):
     opt_dram_powerdown = getattr(options, "enable_dram_powerdown", None)
     opt_mem_channels_intlv = getattr(options, "mem_channels_intlv", 128)
     opt_xor_low_bit = getattr(options, "xor_low_bit", 0)
+
+    print(f'opt_mem_channels_intlv={opt_mem_channels_intlv}')
+    quit(-1)
 
     if opt_mem_type == "HMC_2500_1x32":
         HMChost = HMC.config_hmc_host_ctrl(options, system)
@@ -156,18 +193,15 @@ def config_mem(options, system):
             port_type="tlm_slave",
             port_data=opt_tlm_memory,
             port=system.membus.mem_side_ports,
-            addr_ranges=system.mem_ranges,
-        )
+            addr_ranges=system.mem_ranges)
         system.workload.addr_check = False
         return
 
     if opt_external_memory_system:
         subsystem.external_memory = m5.objects.ExternalSlave(
             port_type=opt_external_memory_system,
-            port_data="init_mem0",
-            port=xbar.mem_side_ports,
-            addr_ranges=system.mem_ranges,
-        )
+            port_data="init_mem0", port=xbar.mem_side_ports,
+            addr_ranges=system.mem_ranges)
         subsystem.workload.addr_check = False
         return
 
@@ -175,9 +209,8 @@ def config_mem(options, system):
 
     import math
     from m5.util import fatal
-
     intlv_bits = int(math.log(nbr_mem_ctrls, 2))
-    if 2**intlv_bits != nbr_mem_ctrls:
+    if 2 ** intlv_bits != nbr_mem_ctrls:
         fatal("Number of memory channels must be a power of 2")
 
     if opt_mem_type:
@@ -189,10 +222,8 @@ def config_mem(options, system):
     mem_ctrls = []
 
     if opt_elastic_trace_en and not issubclass(intf, m5.objects.SimpleMemory):
-        fatal(
-            "When elastic trace is enabled, configure mem-type as "
-            "simple-mem."
-        )
+        fatal("When elastic trace is enabled, configure mem-type as "
+                "simple-mem.")
 
     # The default behaviour is to interleave memory channels on 128
     # byte granularity, or cache line granularity if larger than 128
@@ -212,16 +243,13 @@ def config_mem(options, system):
         for i in range(nbr_mem_ctrls):
             if opt_mem_type and (not opt_nvm_type or range_iter % 2 != 0):
                 # Create the DRAM interface
-                dram_intf = create_mem_intf(
-                    intf, r, i, intlv_bits, intlv_size, opt_xor_low_bit
-                )
+                dram_intf = create_mem_intf(intf, r, i,
+                    intlv_bits, intlv_size, opt_xor_low_bit)
 
                 # Set the number of ranks based on the command-line
                 # options if it was explicitly set
-                if (
-                    issubclass(intf, m5.objects.DRAMInterface)
-                    and opt_mem_ranks
-                ):
+                if issubclass(intf, m5.objects.DRAMInterface) and \
+                   opt_mem_ranks:
                     dram_intf.ranks_per_channel = opt_mem_ranks
 
                 # Enable low-power DRAM states if option is set
@@ -229,11 +257,9 @@ def config_mem(options, system):
                     dram_intf.enable_dram_powerdown = opt_dram_powerdown
 
                 if opt_elastic_trace_en:
-                    dram_intf.latency = "1ns"
-                    print(
-                        "For elastic trace, over-riding Simple Memory "
-                        "latency to 1ns."
-                    )
+                    dram_intf.latency = '1ns'
+                    print("For elastic trace, over-riding Simple Memory "
+                        "latency to 1ns.")
 
                 # Create the controller that will drive the interface
                 mem_ctrl = dram_intf.controller()
@@ -241,16 +267,13 @@ def config_mem(options, system):
                 mem_ctrls.append(mem_ctrl)
 
             elif opt_nvm_type and (not opt_mem_type or range_iter % 2 == 0):
-                nvm_intf = create_mem_intf(
-                    n_intf, r, i, intlv_bits, intlv_size, opt_xor_low_bit
-                )
+                nvm_intf = create_mem_intf(n_intf, r, i,
+                    intlv_bits, intlv_size, opt_xor_low_bit)
 
                 # Set the number of ranks based on the command-line
                 # options if it was explicitly set
-                if (
-                    issubclass(n_intf, m5.objects.NVMInterface)
-                    and opt_nvm_ranks
-                ):
+                if issubclass(n_intf, m5.objects.NVMInterface) and \
+                   opt_nvm_ranks:
                     nvm_intf.ranks_per_channel = opt_nvm_ranks
 
                 # Create a controller if not sharing a channel with DRAM
@@ -265,13 +288,13 @@ def config_mem(options, system):
 
     # hook up NVM interface when channel is shared with DRAM + NVM
     for i in range(len(nvm_intfs)):
-        mem_ctrls[i].nvm = nvm_intfs[i]
+        mem_ctrls[i].nvm = nvm_intfs[i];
 
     # Connect the controller to the xbar port
     for i in range(len(mem_ctrls)):
         if opt_mem_type == "HMC_2500_1x32":
             # Connect the controllers to the membus
-            mem_ctrls[i].port = xbar[i // 4].mem_side_ports
+            mem_ctrls[i].port = xbar[i//4].mem_side_ports
             # Set memory device size. There is an independent controller
             # for each vault. All vaults are same size.
             mem_ctrls[i].dram.device_size = options.hmc_dev_vault_size

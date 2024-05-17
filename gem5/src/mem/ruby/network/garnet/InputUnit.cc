@@ -97,6 +97,8 @@ InputUnit::wakeup()
             int outport = m_router->route_compute(t_flit->get_route(),
                 m_id, m_direction);
 
+            DPRINTF(RubyNetwork,"router %d granting outport %d to vc %d\n",m_router->get_id(),outport, vc);
+
             // Update output port in VC
             // All flits in this packet will use this output port
             // The output port field in the flit is updated after it wins SA
@@ -151,17 +153,6 @@ InputUnit::increment_credit(int in_vc, bool free_signal, Tick curTime)
     m_credit_link->scheduleEventAbsolute(m_router->clockEdge(Cycles(1)));
 }
 
-bool
-InputUnit::functionalRead(Packet *pkt, WriteMask &mask)
-{
-    bool read = false;
-    for (auto& virtual_channel : virtualChannels) {
-        if (virtual_channel.functionalRead(pkt, mask))
-            read = true;
-    }
-
-    return read;
-}
 
 uint32_t
 InputUnit::functionalWrite(Packet *pkt)

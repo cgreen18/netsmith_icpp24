@@ -65,3 +65,5 @@ class RubyNetwork(ClockedObject):
         "Size of data messages. Defaults to the parent "
         "RubySystem cache line size.",
     )
+
+    synth_traffic = Param.Bool(False,"Whether using synthetic traffic (affects translation)")

@@ -23,5 +23,12 @@ auto_top: src/auto_top.cpp
 auto_top_db: src/auto_top.cpp
 	$(CPP) $(CARGS) -o bin/auto_top_db src/auto_top.cpp -DDEBUG -I$(INC) $(CPPLIB) -lm
 
+mclb: src/mclb.cpp
+	$(CPP) $(CARGS) -o bin/mclb src/mclb.cpp -I$(INC) $(CPPLIB) -lm
+
+noci_mclb: src/noci_mclb.cpp
+	$(CPP) $(CARGS) -o bin/noci_mclb src/noci_mclb.cpp -I$(INC) $(CPPLIB) -lm
+
+
 clean:
 	rm -rf bin/

@@ -1,3 +1,31 @@
+# Copyright (c) 2024 Purdue University
+# All rights reserved.
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met: redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer;
+# redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution;
+# neither the name of the copyright holders nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Authors: Conor Green
+
 '''
 
 Description:
@@ -249,7 +277,7 @@ class Floyd:
 
             short_paths.append([])
 
-            # print(f'\nMin hop paths for src {src}')
+            print(f'\nNon min hop paths for src {src}')
 
             for dest in range(n_routers):
                 short_paths[src].append([])
@@ -341,13 +369,13 @@ class Floyd:
         n_routers = self.n_routers
 
         short_paths = []
-        print(f'picky paths\n\t',end='')
+        print(f'Selecting min hop picky paths')
 
         for src in range(n_routers):
 
             short_paths.append([])
 
-            print(f'{src}')
+            # print(f'{src}')
 
             for dest in range(n_routers):
                 short_paths[src].append([])
@@ -428,8 +456,6 @@ class Floyd:
 
 
         self.all_min_hop_picky_paths = short_paths.copy()
-
-        print(f'\ndone with picky paths')
 
     def calculate_min_hop_injej_paths(self):
 
@@ -1064,24 +1090,22 @@ class Floyd:
         # for brevity
         n_routers = self.n_routers
 
-        local_verbose = False
-
+        local_verbose =  False
 
         short_paths = []
-
         for src in range(n_routers):
-
             short_paths.append([])
 
-            # print(f'\nMin hop paths for src {src}')
-
+            
             for dest in range(n_routers):
+                if local_verbose:
+                    print(f'\nMin hop paths for src {src}, dest {dest}')
                 short_paths[src].append([])
 
-                # if src == 5 and dest == 14  :
+                # if src == 0 and dest == 7  :
                 # if True:
                 if False:
-                    local_verbose = True
+                    # local_verbose = True
                     pass
 
                 if src == dest:
@@ -1094,18 +1118,18 @@ class Floyd:
 
                 shortest_dist = self.hop_dist[src][dest]
 
+                # now find a path
                 nonmin_allowance = 0
                 at_least_one_path = False
                 while not at_least_one_path:
 
                     this_path_list = []
 
-
-
                     if local_verbose:
                         print('-'*80)
                         print(f'\tMin hop paths for src {src}, dest {dest}. shortest_dist={shortest_dist}. nonmin_allowance={nonmin_allowance}')
-                        input(f'Searching for path {src}->{dest} of dist {shortest_dist}')
+                        print(f'Searching for path {src}->{dest} of dist {shortest_dist}')
+                        # input('cont?')
 
 
                     queue = deque()
@@ -1122,16 +1146,18 @@ class Floyd:
                         last = path[-1]
 
                         if local_verbose:
-                            input(f'\t\tpath {path} (len {len(path)})')
+                            input(f'\t\tpath {path} (len {len(path) - 1})')
 
                         # only consider the minimal paths
                         if len(path) - 1 > shortest_dist + nonmin_allowance :
-                            # print(f'\t\t\tpath - 1 => shortest + nonmin_allowance ')
+                            if local_verbose:
+                                print(f'\t\t\tpath - 1 => shortest + nonmin_allowance ')
                             continue
                         
-                        # else:
-                        #     print(f'\t\t\tpath {path} (len {len(path)}) is nonminimal')
-
+                        else:
+                            if local_verbose:
+                                print(f'\t\t\tpath {path} (len {len(path)}) is nonminimal')
+                            pass
 
 
                         if last == dest:
@@ -1173,8 +1199,10 @@ class Floyd:
 
                     nonmin_allowance += 1
 
-                    # if nonmin_allowance > 3:
-                    #     local_verbose =True
+                    if nonmin_allowance < 1:
+                        local_verbose = False
+                    else:
+                        local_verbose = False# True
 
                     # if src == 3 and dest == 14:
                     #     input(f'continuing nonmin_allowance to {nonmin_allowance}')
@@ -1273,6 +1301,7 @@ class Floyd:
         if col_a < col_b:
             return True
         if col_a == col_b:
+            # return True
             if a < b:
                 return True
 
@@ -1288,6 +1317,7 @@ class Floyd:
         if col_a > col_b:
             return True
         if col_a == col_b:
+            # return False
             if a > b:
                 return True
 
@@ -1628,9 +1658,18 @@ class Floyd:
         self.r_map = self.ingest_a_map(path_name)
         self.n_routers = len(self.r_map)
         self.n_ulinks = self.calc_n_ulinks()
+
+
         self.n_cols = 5
         if self.n_routers == 48:
             self.n_cols = 8
+        if self.n_routers == 30:
+            self.n_cols = 5
+        if self.n_routers == 64:
+            self.n_cols = 8
+
+        # input(f'Number of cols very important. Must be set. Currently, n_cols = {self.n_cols}')
+
 
     def ingest_a_map(self, path_name):
         file_name = path_name.split('/')[-1]

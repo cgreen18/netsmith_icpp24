@@ -53,10 +53,18 @@ Router::Router(const Params &p)
     m_virtual_networks(p.virt_nets), m_vc_per_vnet(p.vcs_per_vnet),
     m_num_vcs(m_virtual_networks * m_vc_per_vnet), m_bit_width(p.width),
     m_network_ptr(nullptr), routingUnit(this), switchAllocator(this),
-    crossbarSwitch(this)
+    crossbarSwitch(this),
+    m_flat_src_dest_to_evn(p.flat_src_dest_to_evn),
+    m_flat_next_router_map(p.flat_next_router_map),
+    m_evn_deadlock_partition(p.evn_deadlock_partition),
+    m_n_deadlock_free(p.n_deadlock_free),
+    m_use_escape_vns(p.use_escape_vns)
 {
     m_input_unit.clear();
     m_output_unit.clear();
+
+    m_post_dlock = false;
+
 }
 
 void
@@ -74,10 +82,14 @@ Router::wakeup()
     DPRINTF(RubyNetwork, "Router %d woke up\n", m_id);
     assert(clockEdge() == curTick());
 
+    // printf("Router %d woke up\n",m_id);
+
     // check for incoming flits
     for (int inport = 0; inport < m_input_unit.size(); inport++) {
         m_input_unit[inport]->wakeup();
     }
+
+    DPRINTF(RubyNetwork, "Router %d checked incoming flits (input_unit)\n", m_id);
 
     // check for incoming credits
     // Note: the credit update is happening before SA
@@ -89,11 +101,74 @@ Router::wakeup()
         m_output_unit[outport]->wakeup();
     }
 
+    // performs route computation in input unit (above)
+
+    DPRINTF(RubyNetwork, "Router %d checked incoming credits (output unit)\n", m_id);
+
     // Switch Allocation
     switchAllocator.wakeup();
 
+    DPRINTF(RubyNetwork, "Router %d completed switch allocation\n", m_id);
+
     // Switch Traversal
     crossbarSwitch.wakeup();
+
+    // tried moving it here but didnt help
+    // for (int outport = 0; outport < m_output_unit.size(); outport++) {
+    //     m_output_unit[outport]->wakeup();
+    // }
+
+    if(get_net_ptr()->is_post_dlock()){
+    // if(true){
+        DPRINTF(RubyNetwork,"======================================================\n");
+        DPRINTF(RubyNetwork,"Post deadlock life. Printing status of router %d\n",m_id);
+
+        DPRINTF(RubyNetwork,"\tInput units:\n");
+
+        for (int inport = 0; inport < m_input_unit.size(); inport++) {
+            int n_vcs_for_iu = m_input_unit[inport]->get_n_vcs();
+
+            DPRINTF(RubyNetwork,"\t\tInput unit %d (direction %s) has %d vcs\n",
+                inport,m_input_unit[inport]->get_direction() ,n_vcs_for_iu);
+            
+            for (int vc=0; vc<n_vcs_for_iu; vc++){
+                if (!m_input_unit[inport]->hasTopFlit(vc)){
+                    // DPRINTF(RubyNetwork,"\t\t\tNo top flit for VC %d\n",
+                    //     vc);
+                    continue;
+                }
+                flit* peeked_flit = m_input_unit[inport]->peekTopFlit(vc);
+                RouteInfo ri = peeked_flit->get_route();
+                int src_r = ri.src_router;
+                int dest_r = ri.dest_router;
+                DPRINTF(RubyNetwork,"\t\t\tVC %d : flit=%s (%d->...->%d)\n",
+                    vc, *peeked_flit, src_r, dest_r);
+            }
+        }
+
+        DPRINTF(RubyNetwork,"\tOutput units:\n");
+        for (int outport = 0; outport < m_output_unit.size(); outport++) {
+            if (!m_output_unit[outport]->hasTopFlit()){
+                // DPRINTF(RubyNetwork,"\t\tNo top flit for output unit %d\n",
+                //     outport);
+                continue;
+            }
+            flit* peeked_flit = m_output_unit[outport]->peekTopFlit();
+            RouteInfo ri = peeked_flit->get_route();
+            int src_r = ri.src_router;
+            int dest_r = ri.dest_router;
+            DPRINTF(RubyNetwork,"\t\tOutput buffer %d (direction %s) : flit=%s (%d->...->%d)\n",
+                outport,m_output_unit[outport]->get_direction() , *peeked_flit, src_r, dest_r);
+
+            for (int vc=0; vc<m_vc_per_vnet; vc++){
+                DPRINTF(RubyNetwork,"\t\t\tVC %d : credit_count = %d\n",
+                    vc, m_output_unit[outport]->get_credit_count(vc));
+            }
+        }
+        DPRINTF(RubyNetwork,"======================================================\n");
+
+    }
+
 }
 
 void
@@ -161,6 +236,7 @@ Router::getInportDirection(int inport)
 int
 Router::route_compute(RouteInfo route, int inport, PortDirection inport_dirn)
 {
+    DPRINTF(RubyNetwork,"Router.cc :: route_compute():: \n");
     return routingUnit.outportCompute(route, inport, inport_dirn);
 }
 
@@ -272,26 +348,6 @@ Router::printAggregateFaultProbability(std::ostream& out)
                                     &aggregate_fault_prob);
     out << "Router-" << m_id << " fault probability: ";
     out << aggregate_fault_prob << std::endl;
-}
-
-bool
-Router::functionalRead(Packet *pkt, WriteMask &mask)
-{
-    bool read = false;
-    if (crossbarSwitch.functionalRead(pkt, mask))
-        read = true;
-
-    for (uint32_t i = 0; i < m_input_unit.size(); i++) {
-        if (m_input_unit[i]->functionalRead(pkt, mask))
-            read = true;
-    }
-
-    for (uint32_t i = 0; i < m_output_unit.size(); i++) {
-        if (m_output_unit[i]->functionalRead(pkt, mask))
-            read = true;
-    }
-
-    return read;
 }
 
 uint32_t

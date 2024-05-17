@@ -1,3 +1,32 @@
+# Copyright (c) 2024 Purdue University
+# All rights reserved.
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met: redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer;
+# redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution;
+# neither the name of the copyright holders nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Authors: Conor Green
+
+
 '''
 
 Description:
@@ -283,6 +312,8 @@ class Routing:
             self.output_allpathslist_picky_raw(base_file_name)
 
         elif 'ndbt' in alg_type:
+
+            # issues here from some larger prev topos
             self.myfloyd.calculate_nonmin_hop_ndbt_paths()
 
             self.all_short_ndbt_paths = self.myfloyd.all_nonmin_hop_ndbt_paths
@@ -292,6 +323,7 @@ class Routing:
                 print(f'need to output all paths list')
             self.output_allpathslist_ndbt_raw(base_file_name)
 
+        # print(F'QUITTING EARLY')
         # quit()
 
         # TODO end uncomment
@@ -342,19 +374,22 @@ class Routing:
 
         ######################################################
 
-        # if nonmin is not None:
-        #     self.myfloyd.calculate_nonmin_hop_paths(nonmin)
+        if nonmin is not None:
+            self.myfloyd.calculate_nonmin_hop_paths(nonmin)
 
-        #     for s, dest_paths in enumerate(self.myfloyd.all_nonmin_hop_paths):
-        #         for d, path_list in enumerate(dest_paths):
-        #             for p in path_list:
-        #                 all_paths[s][d].append(p)
-        #     # all_paths += self.myfloyd.all_nonmin_hop_paths
+            for s, dest_paths in enumerate(self.myfloyd.all_nonmin_hop_paths):
+                for d, path_list in enumerate(dest_paths):
+                    for p in path_list:
+                        if p not in all_paths[s][d]:
+                            all_paths[s][d].append(p)
+            # all_paths += self.myfloyd.all_nonmin_hop_paths
 
-        #     print(f'found {len(self.myfloyd.all_nonmin_hop_paths)} nonminimal paths {self.myfloyd.all_nonmin_hop_paths}')
+            print(f'found {len(self.myfloyd.all_nonmin_hop_paths)} nonminimal paths {self.myfloyd.all_nonmin_hop_paths}')
 
 
+        self.all_short_paths = all_paths
 
+        self.output_allpathslist_raw(base_file_name)
 
 
         # return
@@ -1139,6 +1174,7 @@ class Routing:
                 if src==dest:
                     continue
                 any_path = random.choice(min_path_list[src][dest])
+                # any_path = min_path_list[src][dest][0]
                 naive_path_list.append(any_path.copy())
 
                 # first_path = min_path_list[src][dest][0]
@@ -1422,8 +1458,12 @@ class Routing:
                 print(f'flow {i} {f_src}->{f_dest} w/ demand {f_demand}')
             i += 1
 
+            # FLAG 27 apr
             min_hop_low_weight_path = \
                 self.get_lowest_weight_path(f_src, f_dest, f_demand, 'cload', picky=picky, ndbt=ndbt , use_rand_idx=use_rand_idx)
+
+            # min_hop_low_weight_path = \
+            #     self.get_highest_weight_path(f_src, f_dest, f_demand, 'cload', picky=picky, ndbt=ndbt , use_rand_idx=use_rand_idx)
 
             best_paths[f_src][f_dest] = min_hop_low_weight_path.copy()
 
@@ -1785,7 +1825,6 @@ class Routing:
                 lowest_max_weight = path_max_weight
                 lowest_weight = path_weight
                 lowest_weight_path = path.copy()        
-
             # otherwise if lower total load but same max (secondary)
             elif path_weight < lowest_weight and path_max_weight == lowest_max_weight:
                 if verbose:
@@ -1794,8 +1833,8 @@ class Routing:
                 lowest_weight = path_weight
                 lowest_weight_path = path.copy()
             else:
-                pass
-                # print(f'path_weoghht {path_weight} too heavy for lowest {lowest_weight}')
+                lowest_weight_path = min_path_set[0]
+                print(f'path_weoghht {path_weight} too heavy for lowest {lowest_weight}')
 
         if self.verbose:
             print(f'Found lowest weight path between {src} -> {dest}')

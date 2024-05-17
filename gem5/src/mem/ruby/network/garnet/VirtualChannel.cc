@@ -75,12 +75,6 @@ VirtualChannel::need_stage(flit_stage stage, Tick time)
     return false;
 }
 
-bool
-VirtualChannel::functionalRead(Packet *pkt, WriteMask &mask)
-{
-    return inputBuffer.functionalRead(pkt, mask);
-}
-
 uint32_t
 VirtualChannel::functionalWrite(Packet *pkt)
 {
