@@ -119,3 +119,13 @@ outputs:
 - ./gem5/synth_outputs/
 - ./gem5/parsec_outputs/
 
+
+#### 5) DSENT
+
+Estimate area and power with DSENT
+
+inputs:
+- ./parsec_outputs/
+
+outputs:
+- ./dsent_results
