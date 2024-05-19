@@ -113,11 +113,16 @@ def solve(mps_file_name, which_solver, out_name=None, time_limit=None):
     bounds = Bounds(lb, ub)
     constraints = LinearConstraint(A, b_l, b_u)
 
+    options = {'disp':True}
+    if time_limit is not None:
+        options.update({'time_limit':time_limit})
 
     print(f'About to solve')
-    res = milp(c=c, constraints=constraints, bounds=bounds, integrality=integrality,options={'disp':True})
+    res = milp(c=c, constraints=constraints, bounds=bounds, integrality=integrality,options=options)
 
     print(f'Result : {res}')
+
+
 
     # for i,x in enumerate(res.x):
     #     print(f'{i:02} : {x}')
@@ -158,6 +163,7 @@ def solve(mps_file_name, which_solver, out_name=None, time_limit=None):
 
     if out_name is None:
         out_name = mps_file_name.replace('mps','map')
+        out_name = mps_file_name.replace('lp','map')
 
     with open(out_name,'w+') as out_file:
         for row in r_map:
@@ -167,12 +173,14 @@ def solve(mps_file_name, which_solver, out_name=None, time_limit=None):
             line = line[:-1] + '\n'
             out_file.write(line)
 
+    print(f'wrote to {out_name}')
+
 def main():
 
     parser = argparse.ArgumentParser(description='Solve MPS files with a couple solvers')
     parser.add_argument('--model_file',type=str,help='.mps/.lp model to solve',default='./../models/autotop_r6_p3_ll20_simple_avghops.mps')
     parser.add_argument('--solver',type=str,help='solver to use',default='GLOP')
-    parser.add_argument('--time_limit',type=int,help='solver time limit in minutes')
+    parser.add_argument('--time_limit',type=int,help='solver time limit in seconds')
     parser.add_argument('--out_map_name',type=str,help='name of file of output map')
 
     args = parser.parse_args()
@@ -181,7 +189,7 @@ def main():
 
     # ...
 
-    solve(args.model_file, args.solver, time_limit=args.time_limit)
+    solve(args.model_file, args.solver, time_limit=args.time_limit, out_name=args.out_map_name)
 
 
 if __name__ == '__main__':
