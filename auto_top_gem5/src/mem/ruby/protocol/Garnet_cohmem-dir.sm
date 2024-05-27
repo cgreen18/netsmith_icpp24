@@ -1,0 +1,172 @@
+/*
+ * Copyright (c) 2009 Advanced Micro Devices, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met: redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer;
+ * redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution;
+ * neither the name of the copyright holders nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+machine(MachineType:Directory, "Garnet_cohmem Directory")
+    : MessageBuffer * cpuRequestToDir, network="From", virtual_network="0",
+            vnet_type = "request";
+      MessageBuffer * cpuResponseToDir, network="From", virtual_network="1",
+            vnet_type = "response";
+      MessageBuffer * memRequestToDir, network="From", virtual_network="2",
+            vnet_type = "request";
+      MessageBuffer * memResponseToDir, network="From", virtual_network="3",
+            vnet_type = "response";
+{
+  // STATES
+  state_declaration(State, desc="Directory states", default="Directory_State_I") {
+    // Base states
+    I, AccessPermission:Invalid, desc="Invalid";
+  }
+
+  // Events
+  enumeration(Event, desc="Directory events") {
+    // processor requests
+    Receive_CPU_Request, desc="Receive Message";
+    Receive_CPU_Response, desc="Receive Message";
+    Receive_Mem_Request, desc="Receive Message";
+    Receive_Mem_Response, desc="Receive Message";
+  }
+
+  // TYPES
+  // DirectoryEntry
+  structure(Entry, desc="...", interface="AbstractCacheEntry", main="false") {
+    State DirectoryState,          desc="Directory state";
+    DataBlock DataBlk,             desc="data for the block";
+  }
+
+  // ** FUNCTIONS **
+  Tick clockEdge();
+
+  State getState(Addr addr) {
+    return State:I;
+  }
+
+  void setState(Addr addr, State state) {
+
+  }
+
+  AccessPermission getAccessPermission(Addr addr) {
+    return AccessPermission:NotPresent;
+  }
+
+  void setAccessPermission(Addr addr, State state) {
+  }
+
+  void functionalRead(Addr addr, Packet *pkt) {
+    error("Garnet_cohmem does not support functional read.");
+  }
+
+  int functionalWrite(Addr addr, Packet *pkt) {
+    error("Garnet_cohmem does not support functional write.");
+  }
+
+  // ** IN_PORTS **
+
+  // cpu req (8B)
+  in_port(cpuRequestQueue_in, RequestMsg, cpuRequestToDir) {
+    if (cpuRequestQueue_in.isReady(clockEdge())) {
+      peek(cpuRequestQueue_in, RequestMsg) {
+        if (in_msg.Type == CoherenceRequestType:MSG) {
+          trigger(Event:Receive_CPU_Request, in_msg.addr);
+        } else {
+          error("Invalid message");
+        }
+      }
+    }
+  }
+  in_port(cpuResponseQueue_in, RequestMsg, cpuResponseToDir) {
+    if (cpuResponseQueue_in.isReady(clockEdge())) {
+      peek(cpuResponseQueue_in, RequestMsg) {
+        if (in_msg.Type == CoherenceRequestType:MSG) {
+          trigger(Event:Receive_CPU_Response, in_msg.addr);
+        } else {
+          error("Invalid message");
+        }
+      }
+    }
+  }
+
+  in_port(memRequestQueue_in, RequestMsg, memRequestToDir) {
+    if (memRequestQueue_in.isReady(clockEdge())) {
+      peek(memRequestQueue_in, RequestMsg) {
+        if (in_msg.Type == CoherenceRequestType:MSG) {
+          trigger(Event:Receive_Mem_Request, in_msg.addr);
+        } else {
+          error("Invalid message");
+        }
+      }
+    }
+  }
+  in_port(memResponseQueue_in, RequestMsg, memResponseToDir) {
+    if (memResponseQueue_in.isReady(clockEdge())) {
+      peek(memResponseQueue_in, RequestMsg) {
+        if (in_msg.Type == CoherenceRequestType:MSG) {
+          trigger(Event:Receive_Mem_Response, in_msg.addr);
+        } else {
+          error("Invalid message");
+        }
+      }
+    }
+  }
+
+  // Actions
+
+  action(ci_popIncomingRequestQueue, "ci", desc="Pop incoming cpu request queue") {
+    cpuRequestQueue_in.dequeue(clockEdge());
+  }
+
+  action(cr_popIncomingResponseQueue, "cr", desc="Pop incoming cpu response queue") {
+    cpuResponseQueue_in.dequeue(clockEdge());
+  }
+
+  action(mi_popIncomingRequestQueue, "mi", desc="Pop incoming mem request queue") {
+    memRequestQueue_in.dequeue(clockEdge());
+  }
+
+  action(mr_popIncomingResponseQueue, "mr", desc="Pop incoming mem response queue") {
+    memResponseQueue_in.dequeue(clockEdge());
+  }
+
+  // TRANSITIONS
+
+  // The directory simply drops the received packets.
+  // The goal of Garnet_cohmem is only to track network stats.
+
+  transition(I, Receive_CPU_Request) {
+    ci_popIncomingRequestQueue;
+  }
+  transition(I, Receive_CPU_Response) {
+    cr_popIncomingResponseQueue;
+  }
+  transition(I, Receive_Mem_Request) {
+    mi_popIncomingRequestQueue;
+  }
+  transition(I, Receive_Mem_Response) {
+    mr_popIncomingResponseQueue;
+  }
+}

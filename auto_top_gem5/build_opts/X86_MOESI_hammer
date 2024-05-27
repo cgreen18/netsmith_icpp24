@@ -1,0 +1,2 @@
+PROTOCOL = 'MOESI_hammer'
+TARGET_ISA = 'x86'

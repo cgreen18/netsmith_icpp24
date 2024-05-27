@@ -1,0 +1,5 @@
+protocol "Garnet_cohmem";
+include "RubySlicc_interfaces.slicc";
+include "Garnet_cohmem-msg.sm";
+include "Garnet_cohmem-cache.sm";
+include "Garnet_cohmem-dir.sm";

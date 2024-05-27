@@ -1,0 +1,4 @@
+TARGET_ISA = 'null'
+PROTOCOL = 'Garnet_cohmem'
+NUMBER_BITS_PER_SET = '128'
+SLICC_HTML=True
