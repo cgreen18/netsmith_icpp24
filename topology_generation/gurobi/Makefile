@@ -26,8 +26,5 @@ auto_top_db: src/auto_top.cpp
 lpbt: src/lpbt.cpp
 	$(CPP) $(CARGS) -o bin/lpbt src/lpbt.cpp -I$(INC) $(CPPLIB) -lm
 
-mclb: src/mclb.cpp
-	$(CPP) $(CARGS) -o bin/mclb src/mclb.cpp -I$(INC) $(CPPLIB) -lm
-
 clean:
 	rm -rf bin/
