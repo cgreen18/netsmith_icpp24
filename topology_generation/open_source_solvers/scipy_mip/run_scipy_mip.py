@@ -164,8 +164,11 @@ def solve(mps_file_name, which_solver, out_name=None, time_limit=None):
     if out_name is None:
         out_name = mps_file_name.replace('mps','map')
         out_name = mps_file_name.replace('lp','map')
+        out_name = out_name.split('/')[-1]
 
-    with open(out_name,'w+') as out_file:
+    out_path = f'./files/solutions/{out_name}'
+
+    with open(out_path,'w+') as out_file:
         for row in r_map:
             line = ''
             for elem in row:
@@ -173,7 +176,7 @@ def solve(mps_file_name, which_solver, out_name=None, time_limit=None):
             line = line[:-1] + '\n'
             out_file.write(line)
 
-    print(f'wrote to {out_name}')
+    print(f'wrote to {out_path}')
 
 def main():
 
