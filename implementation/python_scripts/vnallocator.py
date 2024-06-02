@@ -1299,7 +1299,10 @@ def verify_nrl_vn_files( nrl_path, vn_path):
         translate_cycle(cycle, ntc_map)
 
         if len(cycle) > 0:
+            print(f'ERROR: possible deadlock')
             quit()
+
+    print(f'SUCCESS: no deadlock')
 
 
 def alloc_vns_map_file(fpath,
@@ -1317,6 +1320,7 @@ def alloc_vns_map_file(fpath,
     iters = 0
 
     topo_name = fpath.split('/')[-1].replace('.paths','')
+    topo_name = topo_name.replace('.map','')
 
     while(not successful):
 
@@ -1372,13 +1376,17 @@ def alloc_vns_map_file(fpath,
 
     del(v)
 
+    # local var check
+    verify_nrl_vn_files(nrl_file_path, vn_file_path)
+
+
 
 
 
 def alloc_vns_map_file_driver(fpath,
     route_file_path_prefix='./topologies_and_routing/routepath_lists',
-    nrl_file_path_prefix='./topologies_and_routing//nr_lists',
-    vn_file_path_prefix='./topologies_and_routing//vn_maps',
+    nrl_file_path_prefix='./topologies_and_routing/nr_lists',
+    vn_file_path_prefix='./topologies_and_routing/vn_maps',
     min_n_vns=None,
     max_n_vns=None,
     max_retries=None,
@@ -1442,7 +1450,7 @@ def alloc_vns_map_file_driver(fpath,
 
             alloc_vns_map_file(fpath, route_file_path, nrl_file_path, vn_file_path, min_n_vns=min_n_vns,max_n_vns=max_n_vns,max_retries=max_retries)
 
-    verify_nrl_vn_files(nrl_file_path, vn_file_path)
+    # verify_nrl_vn_files(nrl_file_path, vn_file_path)
 
 def alloc_vns_all_in_dir(dir, mask,
                         route_file_path_prefix='./topologies_and_routing/routepath_lists',
@@ -1519,6 +1527,8 @@ def main():
 
     global verbose
     verbose = args.verbose
+
+    print(f'args={args}')
 
     fname = None
     if args.filename is not None:

@@ -288,18 +288,18 @@ class Routing:
             self.all_short_ndbt_picky_paths = self.myfloyd.all_nonmin_hop_ndbt_picky_paths
 
             if self.light_verbose:
-                print(f'Completed picky FW')
+                print(f'Completed ndbt_picky FW')
             self.output_allpathslist_ndbt_picky_raw(base_file_name)
 
 
 
-        if 'ndbt_injej' in alg_type:
+        elif 'ndbt_injej' in alg_type:
             self.myfloyd.calculate_nonmin_hop_ndbt_injej_paths()
 
             self.all_short_ndbt_injej_paths = self.myfloyd.all_nonmin_hop_ndbt_injej_paths
 
             if self.light_verbose:
-                print(f'Completed picky FW')
+                print(f'Completed ndbt_injej FW')
             self.output_allpathslist_ndbt_injej_raw(base_file_name)
 
         elif 'picky' in alg_type:

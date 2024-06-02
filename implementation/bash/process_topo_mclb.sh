@@ -11,7 +11,7 @@ python3 python_scripts/routing.py --alg all_naive --filename ${2}/${1}.map
 
 
 
-./../gurobi/bin/mclb -t ${2}/${1}.map -pl ./topologies_and_routing/allpath_lists/${1}.rallpaths -of ./topologies_and_routing/routepath_lists/${1}_mclb.paths --num_routers ${3}
+./gurobi/bin/mclb -t ${2}/${1}.map -pl ./topologies_and_routing/allpath_lists/${1}.rallpaths -of ./topologies_and_routing/routepath_lists/${1}_mclb.paths --num_routers ${3}
 
 
 
