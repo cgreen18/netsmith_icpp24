@@ -16,19 +16,27 @@ This flow completes
 5. PARSEC simulation
 6. DSENT analysis
 
-Assuming all tools set up correctly and running from netsmith_icpp24 directory. These commands will create a 20 router, 4 port topology as described in the paper. Gurobi will run for 1 minute to create a new topology. Next, the topology will be routed, made deadlock free, and simulated with synthetic traffic. Then create NoI + NoC = NoCI topology, route, deadlock avoid, and simulate PARSEC for 1000 instructions. After, the stats will be read for power/area estimates. 
+Assuming all tools set up correctly, models were unzipped, and running from netsmith_icpp24 directory. These commands will create a 20 router, 4 port topology as described in the paper. Gurobi will run for 1 minute to create a new topology. Next, the topology will be routed, made deadlock free, and simulated with synthetic traffic. Then create NoI + NoC = NoCI topology, route, deadlock avoid, and simulate PARSEC for 1000 instructions. After, the stats will be read for power/area estimates. 
 ```
 # 1
-./bin/auto_top -if files/prob_defs/dev_20r_4p_25ll.dat -of my_20r_4p_25ll_topo --max_diam 20 --use_run_sol -o avg_hop --time_limit 1
-cp files/optimal_solutions/my_20r_4p_25ll_topo.map ../implementation/topologies_and_routing/topo_maps/
+cd topology_generation/gurobi
+source bash/create_netsmith.sh 20 large latency
+cp files/optimal_solutions/my_20r_4p_25ll_avg_hops_topo.map ../../implementation/topologies_and_routing/topo_maps/
+
+# 1 (alternative)
+cd topology_generation/open_source_solvers
+source bash/create_netsmith.sh 20 large latency
+cp files/solutions/my_20r_4p_25ll_avg_hops_topo.map ../../implementation/topologies_and_routing/topo_maps/
+
+
 
 # 2
-cd ../implementation/
-source ./bash/analyze_topo.sh topologies_and_routing/topo_maps/my_20r_4p_25ll_topo.map files/static_metrics/my_20r_4p_25ll_topo.txt
-source ./bash/process_topo_mclb.sh my_20r_4p_25ll_topo ./topologies_and_routing/topo_maps/ 20 4
-cp ./topologies_and_routing/topo_maps/my_20r_4p_25ll_topo.map ../auto_top_gem5/topologies_and_routing/topo_maps/
-cp ./topologies_and_routing/nr_lists/my_20r_4p_25ll_topo_mclb.nrl ../auto_top_gem5/topologies_and_routing/nr_lists/
-cp ./topologies_and_routing/vn_maps/my_20r_4p_25ll_topo_mclb_hops_4vns.vn ../auto_top_gem5/topologies_and_routing/vn_maps/
+cd ../../implementation/
+source ./bash/analyze_topo.sh topologies_and_routing/topo_maps/my_20r_4p_25ll_avg_hops_topo.map files/static_metrics/my_20r_4p_25ll_avg_hops_topo.txt
+source ./bash/process_topo_mclb.sh my_20r_4p_25ll_avg_hops_topo ./topologies_and_routing/topo_maps/ 20 4
+cp ./topologies_and_routing/topo_maps/my_20r_4p_25ll_avg_hops_topo.map ../auto_top_gem5/topologies_and_routing/topo_maps/
+cp ./topologies_and_routing/nr_lists/my_20r_4p_25ll_avg_hops_topo_mclb.nrl ../auto_top_gem5/topologies_and_routing/nr_lists/
+cp ./topologies_and_routing/vn_maps/my_20r_4p_25ll_avg_hops_topo_mclb_hops_4vns.vn ../auto_top_gem5/topologies_and_routing/vn_maps/
 
 # 3
 cd ../auto_top_gem5
