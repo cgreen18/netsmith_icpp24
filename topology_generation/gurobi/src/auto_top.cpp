@@ -198,16 +198,17 @@ void usage(const char* name){
     cout << "                                       e.g. './files/prob_defs/dev_20r_4p_25ll.dat'" << endl;
     cout << "   -of, --out_filename <str>       base (do not include extension) for model and solution files" << endl;
     cout << "                                       e.g. 'my_20r_25ll'" << endl;
+    cout << "   --use_run_sol                   bool flag to output running best solution(s). IMPORTANT CLA" << endl;
     cout << "   --start_hint_file <str>         rmap hints to seed solution value" << endl;
     cout << "                                       e.g. './files/prev_topos/kite_small.map'" << endl;
     cout << "   --hard_sets_file <str>          rmap forced/constrained positive values. all '1' in file will be constrained as connected. '0' ignored" << endl;
-    cout << "                                       e.g. './files/prev_topos/kite_small.map'" << endl;
+    cout << "                                       e.g. './files/prev_topos/cmesh.map'" << endl;
 
     cout << endl;
     cout << "   --num_routers <int>             manually set # of routers. Will still read other givens from file" <<endl;
     cout << "   --num_router_rows <int>         manually set # of routers. Will still read other givens from file" <<endl;
     cout << "   --num_ports <int>               manually set # of ports. Will still read other givens from file" <<endl;
-    cout << "   --longest_link <int>            manually set longest allowable link distance. Will still read other givens from file" <<endl;
+    cout << "   --longest_link <int>            manually set longest allowable link distance. Will still read other givens from file. 15ll => small, 2ll => medium, 25ll => large" <<endl;
     cout << "   --unlim_link_length             bool flag to ignore link length constraint(s)" << endl;
     cout << "   --sym_links                     bool flag to force link symmetry constraint(s)" << endl;
     cout << "   --allow_multi_links             bool flag to allow multiple links between routers. ie rmap as int (was binary)" << endl;
@@ -228,7 +229,6 @@ void usage(const char* name){
     cout << "   --min_sc_bw <dbl>               ..." << endl;
 
     cout << endl;
-    cout << "   --use_run_sol                   bool flag to output running best solution(s). IMPORTANT CLA" << endl;
     cout << "   --no_solve                      do not solve, just output the model as .lp" << endl;
     cout << "   --model_type <str>              which formulation: with or without one_hop." << endl;
     cout << "                                       options: w_hop, no_hop" <<endl;
@@ -245,6 +245,7 @@ void usage(const char* name){
     cout << "   --mem_sensitive                 bool flag if computer has low memory (<64GB)" << endl;
     cout << "   --mip_focus <int>               mip focus" << endl;
     cout << "   --max_sc_size <int>             limit sparsest cut set sizes to lesser than and equal to this size" << endl;
+    cout << "   --use_vlo_sc                    bool to limit sparsest cut constr to only valid links (reduces model size)" << endl;
 
     cout << endl;
     cout << "   -h, --help                      display help/usage (this)"<<endl;
@@ -1971,7 +1972,7 @@ void constr_sc_bw_vlo(GRBModel &model,
 
 
 // confusing naming. this defines sc_bw var
-void constr_sc_bw_vlo_vso(GRBModel &model,
+void constr_sc_bw_vlo(GRBModel &model,
                     GRBVar** r2r_map,
                     int n_routers,
                     GRBVar sc_bw,
@@ -2464,7 +2465,8 @@ int main(int argc, char *argv[])
         bool mem_sensitive = false;
         int mip_focus = -1;
         int presolve_val = -1;
-        int max_sc_size = 10;
+        int max_sc_size = -1;
+        bool use_vlo_sc = false;
 
         bool use_start_hint = false;
         int** start_map;
@@ -2735,6 +2737,9 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(argv[i], "--max_sc_size") == 0){
                 max_sc_size = atoi(argv[++i]);
+            }
+            else if (strcmp(argv[i], "--use_vlo_sc") == 0){
+                use_vlo_sc = true;
             }
             // cla meta
             // ------------------------------------------------------------------
@@ -3222,13 +3227,14 @@ int main(int argc, char *argv[])
         // Sparsest Cut Bandwidth (constraints to define sc_bw var)
         //                      (only applies if objective is sc_bw or min sc_bw)
         // ------------------------------------------------------------------
-        bool use_vlo_sc = false;
-        bool use_vso_sc = false;
         if(obj == SC_BW || has_min_sc_bw){
             if(use_noci_weighting) constr_weighted_sc_bw(model, r2r_map, n_routers, sc_bw, noci_weights);
-            else if (use_vlo_sc && !use_vso_sc) constr_sc_bw_vlo(model, r2r_map, n_routers, sc_bw, r2r_phys_dist, longest_link);
-            else if (use_vlo_sc && use_vso_sc) constr_sc_bw_vlo_vso(model, r2r_map, n_routers, sc_bw, r2r_phys_dist, longest_link, max_sc_size);
+            // valid links only and limit size
+            else if (use_vlo_sc && max_sc_size != -1) constr_sc_bw_vlo(model, r2r_map, n_routers, sc_bw, r2r_phys_dist, longest_link, max_sc_size);
+            // valid links only
+            else if (use_vlo_sc) constr_sc_bw_vlo(model, r2r_map, n_routers, sc_bw, r2r_phys_dist, longest_link);
 
+            // basic
             else constr_sc_bw(model, r2r_map, n_routers, sc_bw);
         }
 
