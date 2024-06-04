@@ -53,7 +53,7 @@ To test installation, creating a large, 12 router topology takes a few hours
 
 #### NoI
 
-Generate large (20r) LPBT topology optimized for latency
+Generate large (20r, 4p) LPBT topology optimized for latency. Note, the prob_def says "5p" to reserve a port for node-to-port mapping while router-to-router is still 4p
 ```
 ./bin/lpbt -if ./files/prob_defs/dev_20r_5p_25ll.dat -of lpbt_l_latop -o total_hops --use_run_sol --time_limit 4320 --write_model --heuristic_ratio 0.8 --mip_focus 1 --concurrent_mip
 ```
@@ -69,7 +69,7 @@ If completes optimal the map will be in ./files/optimal_solutions and/or running
 
 Generate Large (20r) LPBT model file (.lp) that doesn't use any general or SOS constraints. (This will generate the model that is run in above commands.)
 ```
-./bin/lpbt -if ./files/prob_defs/dev_20r_4p_25ll.dat -o total_hops --no_solve --use_lp_model --wrtie_model
+./bin/lpbt -if ./files/prob_defs/dev_20r_4p_25ll.dat -o total_hops --no_solve --use_lp_model --write_model
 ```
 
 #### Usage

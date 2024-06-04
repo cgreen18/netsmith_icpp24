@@ -127,9 +127,6 @@ double calc_avg(double** r2r_hop_dist,
     return tot_hops / n_counted;
 }
 
-void post_process(int** rmap,
-                    int n_routers)
-
 class incumbent_solution_callback: public GRBCallback
 {
     public:
@@ -1021,13 +1018,28 @@ int main(int argc, char *argv[])
         #endif
 
 
+        // append obj
+        string model_obj_str;
+        switch(obj){
+            case TOTAL_HOPS:
+                model_obj_str = "_tothops";
+                break;
+            case POWER:
+                model_obj_str = "_power";
+                break;
+            default:
+                printf("Objective nto recognized\n");
+                model_obj_str = "_unk";
+                break;
+        }
+
         string base_file_name;
         string out_model_format;
         out_model_format = ".mps";
         if(use_lp_model) out_model_format = ".lp";
 
-        base_file_name = "lpbt_r" + to_string(n_routers) + "_p" + to_string(n_ports) + "_ll" + to_string(int(10.0*longest_link));
-        if(!uni_dir_links) base_file_name = string(base_file_name) + "_sym";
+        base_file_name = "lpbt_r" + to_string(n_routers) + "_p" + to_string(n_ports) + "_ll" + to_string(int(10.0*longest_link)) + string(model_obj_str);
+        if(uni_dir_links) base_file_name = string(base_file_name) + "_asym";
         // CLA override
         if(out_name_given) base_file_name =  string(out_file_name);
 
