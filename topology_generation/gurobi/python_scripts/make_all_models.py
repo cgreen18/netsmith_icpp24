@@ -29,23 +29,25 @@
 
 import subprocess
 
-exe = './bin/auto_top'
-n_rs = [6, 64, 48, 30, 20, 16, 12, 6]
+exe_ns = './bin/auto_top'
+exe_lpbt = './bin/lpbt'
+
+n_rs = [6, 12, 20, 30, 48, 64]
 #n_rs = [20, 30, 48, 64]
 #n_ps = [3,4,5,6]
 n_ps = [4]
 lls = [15, 2, 25]
 simple_mods = [False, True]
-objs = ['avg_hops','total_hops','bi_bw','sc_bw']
-objs = ['avg_hops','sc_bw']
+objs = ['total_hops','power']
 use_lps = [False]#[False, True]
 soses = [False]
 use_sym = [False]
 
-base_flags = ['--no_solve']#,'--write_presolved']
+base_flags = ['--no_solve','--write_model']#,'--write_presolved']
 
 
-def create_and_run_cmd(n_routers, n_ports, longest_link, is_sym, simple_model, sos_allowed, obj, use_lp):
+
+def create_and_run_cmd_ns(n_routers, n_ports, longest_link, is_sym, simple_model, sos_allowed, obj, use_lp):
 
     cmd = []
 
@@ -53,19 +55,50 @@ def create_and_run_cmd(n_routers, n_ports, longest_link, is_sym, simple_model, s
 
     # cmd += setup
 
-    cmd += [exe]
+    cmd += [exe_ns]
 
     pdef = f'files/prob_defs/dev_{n_routers}r_{n_ports}p_{longest_link}ll.dat'
     cmd += ['-if', pdef]
 
-    if simple_model:
-        cmd += ['--simple_model']
-    if sos_allowed:
-        cmd += ['--sos_allowed']
     if use_lp:
         cmd += ['--use_lp_model']
-    if is_sym:
-        cmd += ['--sym_links']
+
+
+
+    cmd += ['-o',obj]
+
+    cmd += base_flags
+
+    #input(' '.join(cmd))
+
+    cmd = ' '.join(cmd)
+
+    print(cmd)
+    # return
+
+    res = None
+
+    # res = subprocess.run(cmd, shell=True)
+    res = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,universal_newlines=True)
+    # res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,universal_newlines=True)
+
+    # quit()
+
+def create_and_run_cmd_lpbt(n_routers, n_ports, longest_link, obj, use_lp):
+
+    cmd = []
+
+    # setup = ['source','setup.sh;']
+
+    # cmd += setup
+
+    cmd += [exe_lpbt]
+
+    pdef = f'files/prob_defs/dev_{n_routers}r_{n_ports}p_{longest_link}ll.dat'
+    cmd += ['-if', pdef]
+
+    if use_lp:
+        cmd += ['--use_lp_model']
 
 
     cmd += ['-o',obj]
@@ -103,7 +136,14 @@ def main():
                                     # constraints too large
                                     if nr > 20 and (o == 'sc_bw' or o == 'bi_bw'):
                                         continue
-                                    create_and_run_cmd(nr, p, ll, usym, sm, sos, o, ulp)
+                                    create_and_run_cmd_ns(nr, p, ll, usym, sm, sos, o, ulp)
+
+    for nr in n_rs:
+        for p in n_ps:
+            for ll in lls:
+                for o in objs:
+                    for ulp in use_lps:
+                        create_and_run_cmd_lpbt(nr, p+1, ll, o, ulp)
 
 if __name__ == '__main__':
     main()
