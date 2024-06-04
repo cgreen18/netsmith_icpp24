@@ -2,6 +2,20 @@
 
 Runs both NetSmith and LPBT formulations
 
+#### Initialization and Setup
+
+First time using this directory
+```
+source init.sh
+```
+
+To set up GUROBI library and license paths (on Purdue servers)
+```
+source setup.sh
+```
+
+Probably similar for other machines
+
 ## NetSmith (auto_top)
 
 #### Simple/Basic
