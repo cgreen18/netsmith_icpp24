@@ -1,10 +1,9 @@
 # netsmith_icpp24
 Repository for ICPP 2024 artifact submission
 
-Purdue University
-Conor Green and Mithuna Thottethodi
+Conor Green and Mithuna Thottethodi. Purdue University 2024
 
-## General Flow
+## Repository Organization
 
 All paths relative to main netsmith_icpp24 directory
 
@@ -16,19 +15,83 @@ This flow completes
 5. PARSEC simulation
 6. DSENT analysis
 
+### Directories
+
+#### 1) ./topology_generation
+Code for a) Gurobi and b) open-source generation of topologies. Within directory, README for instructions and bash scripts for examples
+
+a)
+inputs:
+- ./prob_defs/
+
+outputs:
+- ./files/models/
+- ./files/running_solutions
+- ./files/optimal_solutions
+
+b)
+inputs:
+- ./models/
+
+outputs:
+- ./files/solutions
+
+#### 2) ./implementation
+Code for static analysis; routing with MCLB, LPBT, or "no double-back turns;" and deadlock avoidance. Within directory, README for instructions and bash scripts for examples
+
+inputs:
+- ./topologies_and_routing/topo_maps/
+
+outputs:
+- ./topologies_and_routing/metrics/
+- ./topologies_and_routing/nr_lists/
+- ./topologies_and_routing/vn_maps/
+
+#### 3) ./auto_top_gem5
+Code for synthetic simulation, parsing, and graphing. Within directory, README for instructions and bash scripts for examples and figure generation
+
+inputs:
+- ./topologies_and_routing/topo_maps/
+- ./topologies_and_routing/nr_lists/
+- ./topologies_and_routing/vn_maps/
+
+outputs:
+- ./synth_outputs/
+
+#### 4) ./implementation
+Code for creating a NoCI topology from a NoI (20r) topology; routing; and deadlock avoidance. Within directory, README for instructions and bash scripts for examples
+
+#### 5) ./auto_top_gem5
+Code and resources for full-system PARSEC simulation, parsing, and graphing. Within directory, README for instructions and bash scripts for examples and figure generation
+
+inputs:
+- ./topologies_and_routing/topo_maps/
+- ./topologies_and_routing/nr_lists/
+- ./topologies_and_routing/vn_maps/
+
+outputs:
+- ./parsec_outputs/
+
+#### 6) ./dsent
+Code for parsing and calculating area/power usage from PARSEC stats. Within directory, README for instructions and bash scripts for examples and figure generation
+
+inputs:
+- ./parsec_outputs/
+
+outputs:
+- ./dsent_results
+
+### File Types
+
+Within this project, a few custom file types are used
+-  .map - these are one-hot maps of router topologies
+-  .rallpaths - raw list of all paths between all source, destination pairs
+-  .paths - selected list of paths (one path per flow) for all source, destination pairs
+-  .nrl - ``next router list'' is a list of 2D routing tables of next hop for each router in the network
+-  .vn - ``virtual network'' map is a 2D table of the designated escape virtual network for a source, destination pair
 
 
-## For a user
-
-1. Navigate to /topology_generation
-    a. For Gurobi navigate to /topology_generation/gurobi
-    b. For other, navigate to /topology_generation/open_source_solvers
-
-
-
-
-
-## All Commands
+## All Commands for a Full Run Through
 
 
 Assuming all tools set up correctly, models were unzipped, and running from netsmith_icpp24 directory. These commands will create a 20 router, 4 port topology as described in the paper. Gurobi will run for 1 minute to create a new topology. Next, the topology will be routed, made deadlock free, and simulated with synthetic traffic. Then create NoI + NoC = NoCI topology, route, deadlock avoid, and simulate PARSEC for 1000 instructions. After, the stats will be read for power/area estimates. 
@@ -85,70 +148,3 @@ cp -r $_TMP_OUTDIR ../dsent/freqmine_1kwarmup_1kmsimul_20r_4p_25ll_topo_noci_pic
 cd ../dsent
 python2 noci_power_area.py ./freqmine_1kwarmup_1kmsimul_20r_4p_25ll_topo_noci_picky_cohmem_prioritized_doubley_memory_mclb_hops router.cfg electrical-link.cfg >> ./dsent_results/log.txt
 ```
-
-
-Within this project, a few custom file types are used
--  .map - these are one-hot maps of router topologies
--  .rallpaths - raw list of all paths between all source, destination pairs
--  .paths - selected list of paths (one path per flow) for all source, destination pairs
--  .nrl - ``next router list'' is a list of 2D routing tables of next hop for each router in the network
--  .vn - ``virtual network'' map is a 2D table of the designated escape virtual network for a source, destination pair
-
-
-#### 1) Gurobi
-
-Write and/or solve model
-
-inputs:
-- ./gurobi/prob_defs/
-
-outputs:
-- ./gurobi/files/models/
-- ./gurobi/files/running_solutions
-- ./gurobi/files/optimal_solutions
-
-#### 1*) Open Source Solvers
-
-Use open source solver(s) to read and solve models
-
-inputs:
-- ./gurobi/files/models/
-
-outputs:
-- ./open_source_solvers/files/solutions
-
-#### 3) Implementation Details
-
-Analyze, route, and allocate escape VNs
-
-inputs:
-- ./topologies_and_routing/topo_maps/
-
-outputs:
-- ./topologies_and_routing/metrics/
-- ./topologies_and_routing/nr_lists/
-- ./topologies_and_routing/vn_maps/
-
-#### 4) Simulate
-
-Simulate synthetic and real workloads in gem5
-
-inputs:
-- ./topologies_and_routing/topo_maps/
-- ./topologies_and_routing/nr_lists/
-- ./topologies_and_routing/vn_maps/
-
-outputs:
-- ./gem5/synth_outputs/
-- ./gem5/parsec_outputs/
-
-
-#### 5) DSENT
-
-Estimate area and power with DSENT
-
-inputs:
-- ./parsec_outputs/
-
-outputs:
-- ./dsent_results
