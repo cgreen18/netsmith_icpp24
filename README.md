@@ -4,7 +4,7 @@ Repository for ICPP 2024 artifact submission
 Purdue University
 Conor Green and Mithuna Thottethodi
 
-# General Flow
+## General Flow
 
 All paths relative to main netsmith_icpp24 directory
 
@@ -15,6 +15,21 @@ This flow completes
 4. NoCI (full system) conversion, routing, and deadlock avoidance
 5. PARSEC simulation
 6. DSENT analysis
+
+
+
+## For a user
+
+1. Navigate to /topology_generation
+    a. For Gurobi navigate to /topology_generation/gurobi
+    b. For other, navigate to /topology_generation/open_source_solvers
+
+
+
+
+
+## All Commands
+
 
 Assuming all tools set up correctly, models were unzipped, and running from netsmith_icpp24 directory. These commands will create a 20 router, 4 port topology as described in the paper. Gurobi will run for 1 minute to create a new topology. Next, the topology will be routed, made deadlock free, and simulated with synthetic traffic. Then create NoI + NoC = NoCI topology, route, deadlock avoid, and simulate PARSEC for 1000 instructions. After, the stats will be read for power/area estimates. 
 ```
