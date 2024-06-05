@@ -2442,7 +2442,7 @@ int main(int argc, char *argv[])
         double** linklength_coeffs;
 
         // objective stuff
-        Objective obj = TOTAL_HOPS;
+        Objective obj = AVG_HOPS;
         double mem_coherence_traffic_ratio = 0.5;
         bool use_memcoh = false;
 
