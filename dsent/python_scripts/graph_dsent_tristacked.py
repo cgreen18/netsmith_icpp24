@@ -1,11 +1,16 @@
 import matplotlib.pyplot as plt
 import csv
 import numpy as np
+import sys
 
 from matplotlib import rc
 
 
 infile_name = 'dsent_results/dsent_stats.csv'
+
+
+if len(sys.argv) > 1:
+    infile_name = sys.argv[1]
 
 
 color_dict = {'NS-LatOp Small':'tab:blue',

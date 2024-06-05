@@ -15,3 +15,5 @@ for b in "mesh";
         echo "python2 noci_power_area.py ./swaptions_for_dsent_20nov/${b}_noci_naive_hops ./router.cfg ./electrical-link.cfg >> ./dsent_results/log.txt"
         python2 noci_power_area.py ./swaptions_for_dsent_20nov/${b}_noci_naive_hops ./router.cfg ./electrical-link.cfg >> ./dsent_results/log.txt
     done
+
+
