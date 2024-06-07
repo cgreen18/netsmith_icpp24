@@ -6,6 +6,9 @@ import sys
 from matplotlib import rc
 
 
+
+use_latex_legend = False
+
 infile_name = 'dsent_results/dsent_stats.csv'
 
 
@@ -368,7 +371,8 @@ plt.rc('ytick', labelsize=10) #fontsize of the y tick labels
 plt.rc('legend', fontsize=12)
 plt.rc('hatch',linewidth=0.75)
 
-plt.rc('text', usetex=True)
+if use_latex_legend:
+    plt.rc('text', usetex=True)
 
 fig = plt.figure(figsize=(7,2))
 ax = fig.add_subplot()
@@ -501,7 +505,8 @@ handles, labels = ax.get_legend_handles_labels()
 # labels.insert(16,' ')
 
 
-custom_labels = [
+if use_latex_legend:
+    custom_labels = [
 r'\underline{Small}',
 'Kite',
 'LPBT-Hops',
@@ -538,6 +543,29 @@ r'\underline{Large}',
 'Mesh'
 
 ]
+
+else:
+    custom_labels = [
+            'Small',
+            'Kite',
+            'LPBT-Hops',
+            'LPBT-Power',
+            'NS-LatOp',
+            'NS-SCOp',
+            'Medium',
+            'Folded Torus',
+            'Kite',
+            'LPBT-Hops',
+            'NS-LatOp',
+            'NS-SCOp',
+
+            'Large',
+            'Butter Donut',
+            'Dbl Butterfly',
+            'Kite',
+            'NS-LatOp',
+            'NS-SCOp'
+            ]
 
 
 leg1 = ax.legend(for_legend, custom_labels,ncol=3,bbox_to_anchor=(0.03, 0.96, 1., .102))
