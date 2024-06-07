@@ -9,7 +9,7 @@ sudo apt install -y python3-pip python3-venv
 python3 -m venv venv_netsmith
 source venv_netsmith/bin/activate
 pip3 install --upgrade pip
-pip3 install -r matplotlib
+pip3 install -r requirements.txt
 
 # for dsent
 sudo apt install -y python-minimal python-dev
