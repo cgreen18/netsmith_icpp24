@@ -34,34 +34,41 @@
 from subprocess import call
 import string, sys, subprocess, os, re
 
-# Compile DSENT to generate the Python module and then import it.
-# This script assumes it is executed from the gem5 root.
-print("Attempting compilation")
+
+build_dir = 'ext/dsent'
+
+rebuild = False
+
+if rebuild:
+    # Compile DSENT to generate the Python module and then import it.
+    # This script assumes it is executed from the gem5 root.
+    print("Attempting compilation")
+
+    src_dir = './ext/dsent'
+    build_dir = './build/ext/dsent'
 
 
+    if not os.path.exists(build_dir):
+        os.makedirs(build_dir)
+    os.chdir(build_dir)
 
-src_dir = './ext/dsent'
-build_dir = './build/ext/dsent'
+    print( '../../../%s' % src_dir)
 
-if not os.path.exists(build_dir):
-    os.makedirs(build_dir)
-os.chdir(build_dir)
+    # called from build dir
+    error = call(['cmake', '../../../%s' % src_dir])
+    if error:
+        print("Failed to run cmake")
+        exit(-1)
 
-print( '../../../%s' % src_dir)
+    error = call(['make'])
+    if error:
+        print("Failed to run make")
+        exit(-1)
 
-# called from build dir
-error = call(['cmake', '../../../%s' % src_dir])
-if error:
-    print("Failed to run cmake")
-    exit(-1)
+    print("Compiled dsent")
+    os.chdir("../../../")
 
-error = call(['make'])
-if error:
-    print("Failed to run make")
-    exit(-1)
 
-print("Compiled dsent")
-os.chdir("../../../")
 sys.path.append(build_dir)
 import dsent
 
