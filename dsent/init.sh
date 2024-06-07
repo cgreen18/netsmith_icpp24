@@ -5,4 +5,5 @@ mkdir build
 cmake ./
 make
 
+cd ../..
 
