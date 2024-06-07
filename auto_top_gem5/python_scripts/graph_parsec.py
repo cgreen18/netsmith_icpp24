@@ -5,6 +5,8 @@ import sys
 
 from matplotlib import rc
 
+use_latex_legend = False
+
 
 # infile_name = 'paper_outputs/parsec_noci_250kBL2_10m.csv'
 infile_name = 'paper_outputs/parsec_noci_500kBL2_10m.csv'
@@ -608,7 +610,8 @@ plt.rc('xtick', labelsize=14) #fontsize of the x tick labels
 plt.rc('ytick', labelsize=10) #fontsize of the y tick labels
 plt.rc('legend', fontsize=12)
 
-plt.rc('text', usetex=True)
+if use_latex_legend:
+    plt.rc('text', usetex=True)
 
 fig = plt.figure(figsize=(14,2))
 ax = fig.add_subplot()
@@ -734,15 +737,23 @@ handles.insert(23,p23[0])
 
 # handles.insert(7,proxy7[0])
 
-labels.insert(0,r'\underline{Small}')
+if use_latex_legend:
+    labels.insert(0,r'\underline{Small}')
+    labels.insert(8,r'\underline{Medium}')
+    labels.insert(16,r'\underline{Large}')
+else:
+    labels.insert(0,'Small')
+    labels.insert(8,'Medium')
+    labels.insert(16,'Large')
+
 labels.insert(4,' ')
 labels.insert(7,' ')
 
-labels.insert(8,r'\underline{Medium}')
+# labels.insert(8,r'\underline{Medium}')
 labels.insert(12,' ')
 labels.insert(15,' ')
 
-labels.insert(16,r'\underline{Large}')
+# labels.insert(16,r'\underline{Large}')
 labels.insert(20,' ')
 labels.insert(23,' ')
 

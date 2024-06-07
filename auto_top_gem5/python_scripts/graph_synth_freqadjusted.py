@@ -9,6 +9,8 @@ import csv
 import sys
 
 
+use_latex_legend = False
+
 # shortcut
 MAX_VAL = 30#None
 MAX_Y = 25
@@ -400,8 +402,8 @@ def gen_synth_20r_3subplots_shuffle(infile_name='./synth_outputs/simple_2b.csv',
     plt.rc('ytick', labelsize=10) #fontsize of the y tick labels
     plt.rc('legend', fontsize=14)
 
-
-    plt.rc('text', usetex=True)
+    if use_latex_legend:
+        plt.rc('text', usetex=True)
 
     fig = plt.figure(figsize=(7,4))
 
@@ -729,11 +731,14 @@ def gen_synth_20r_3subplots_shuffle(infile_name='./synth_outputs/simple_2b.csv',
     # # print(handles)
     # # quit()
 
-    labels.insert(0,r'\underline{Small}')
-    # labels.insert(6,r'\underline{Medium}')
-    # labels.insert(12,r'\underline{Large}')
-    labels.insert(7,r'\underline{Medium}')
-    labels.insert(14,r'\underline{Large}')
+    if use_latex_legend:
+        labels.insert(0,r'\underline{Small}')
+        labels.insert(7,r'\underline{Medium}')
+        labels.insert(14,r'\underline{Large}')
+    else:
+        labels.insert(0,'Small')
+        labels.insert(7,'Medium')
+        labels.insert(14,'Large')
 
     # # handles, labels = ax.get_legend_handles_labels()
 
@@ -897,8 +902,8 @@ def gen_synth_20r_3subplots(infile_name='./synth_outputs/simple_2b.csv', param_m
     plt.rc('ytick', labelsize=10) #fontsize of the y tick labels
     plt.rc('legend', fontsize=14)
 
-
-    plt.rc('text', usetex=True)
+    if use_latex_legend:
+        plt.rc('text', usetex=True)
 
     fig = plt.figure(figsize=(7,4))
 
@@ -1221,11 +1226,15 @@ def gen_synth_20r_3subplots(infile_name='./synth_outputs/simple_2b.csv', param_m
     # # print(handles)
     # # quit()
 
-    labels.insert(0,r'\underline{Small}')
-    labels.insert(6,r'\underline{Medium}')
-    labels.insert(12,r'\underline{Large}')
-    # labels.insert(7,r'\underline{Medium}')
-    # labels.insert(14,r'\underline{Large}')
+    if use_latex_legend:
+        labels.insert(0,r'\underline{Small}')
+        labels.insert(6,r'\underline{Medium}')
+        labels.insert(12,r'\underline{Large}')
+    else:
+        labels.insert(0,'Small')
+        labels.insert(6,'Medium')
+        labels.insert(12,'Large')
+
 
     # # handles, labels = ax.get_legend_handles_labels()
 
@@ -1424,7 +1433,8 @@ def gen_synth_48r_3subplots(infile_name='./synth_outputs/simple_2b.csv', param_m
     plt.rc('legend', fontsize=14)
 
 
-    plt.rc('text', usetex=True)
+    if use_latex_legend:
+        plt.rc('text', usetex=True)
 
     fig = plt.figure(figsize=(7,4))
 
@@ -1708,13 +1718,16 @@ def gen_synth_48r_3subplots(infile_name='./synth_outputs/simple_2b.csv', param_m
     # # print(handles)
     # # quit()
 
-    labels.insert(0,r'\underline{Small}')
+    if use_latex_legend:
+        labels.insert(0,r'\underline{Small}')
+        labels.insert(4,r'\underline{Medium}')
+        labels.insert(8,r'\underline{Large}')
+    else:
+        labels.insert(0,'Large')
+        labels.insert(4,'Medium')
+        labels.insert(8,'Large')
+    
     labels.insert(3,' ')
-    # labels.insert(8,' ')
-    # labels.insert(9,' ')    
-    labels.insert(4,r'\underline{Medium}')
-    labels.insert(8,r'\underline{Large}')
-
 
 
     # labels.insert(7,r'\underline{Medium}')
@@ -1911,8 +1924,8 @@ def gen_synth_64r_3subplots(infile_name='./synth_outputs/simple_2b.csv', param_m
     plt.rc('ytick', labelsize=10) #fontsize of the y tick labels
     plt.rc('legend', fontsize=14)
 
-
-    plt.rc('text', usetex=True)
+    if use_latex_legend:
+        plt.rc('text', usetex=True)
 
     fig = plt.figure(figsize=(7,4))
 
@@ -2200,14 +2213,16 @@ def gen_synth_64r_3subplots(infile_name='./synth_outputs/simple_2b.csv', param_m
     # # print(handles)
     # # quit()
 
-    labels.insert(0,r'\underline{Small}')
+    if use_latex_legend:
+        labels.insert(0,r'\underline{Small}')
+        labels.insert(4,r'\underline{Medium}')
+        labels.insert(8,r'\underline{Large}')
+    else:
+        labels.insert(0,'Small')
+        labels.insert(4,'Medium')
+        labels.insert(8,'Large')
+
     labels.insert(3,' ')
-    # labels.insert(8,' ')
-    # labels.insert(9,' ')    
-    labels.insert(4,r'\underline{Medium}')
-    labels.insert(8,r'\underline{Large}')
-
-
 
     # labels.insert(7,r'\underline{Medium}')
     # labels.insert(14,r'\underline{Large}')
