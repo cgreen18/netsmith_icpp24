@@ -2338,7 +2338,7 @@ def main():
     # gen_synth_48r_3subplots(infile_name = file_48r, param_mem_or_coh=memcoh, param_alg=alg_48r)
 
     if n_routers == 64:
-        gen_synth_64r_3subplots(infile_name = file_64r, param_mem_or_coh='coh', param_alg=alg_64r)
+        gen_synth_64r_3subplots(infile_name = in_name, param_mem_or_coh='coh', param_alg=alg)
     # gen_synth_64r_3subplots(infile_name = file_64r, param_mem_or_coh='mem', param_alg=alg_64r)
 
     if n_routers == 20:

@@ -1,0 +1,246 @@
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 22.1.0.0
+gem5 compiled Apr 26 2024 15:22:46
+gem5 started Apr 29 2024 17:38:51
+gem5 executing on mnemosyne01.ecn.purdue.edu, pid 26405
+command line: ./build/Garnet_standalone/gem5.fast -d ./synth_outputs/simple/2b/mixed/uniform/2evns_12vcs_64cpus_4xdirs_4.0GHz/mem/kite_small_64r/0_15/ configs/netsmith/netsmith_synth.py --topology EscapeVirtualNetworks --noi_routers 64 --sim-cycles 2147483647 --injectionrate 0.15 --noc_clk 4.0GHz --sys-clock 4.0GHz --ruby-clock 4.0GHz --noi_clk 3.6GHz --router_map_file ./topologies_and_routing/topo_maps/64r/prev/kite_small_64r.map --flat_vn_map_file ./topologies_and_routing/vn_maps/kite_small_64r_nndbt_none_2vns.vn --flat_nr_map_file ./topologies_and_routing/nr_lists/kite_small_64r_nndbt.nrl --ruby --mem_or_coh mem --mem-size 4096000 --num-dirs 64 --num-cpus 64 --network garnet --mem-type SimpleMemory --routing-algorithm 2 --use_escape_vns --synth_traffic --vcs-per-vnet 12 --evn_deadlock_partition 10 --evn_n_deadlock_free 1 --evn_min_n_deadlock_free 2
+
+info: Standard input is not a terminal, disabling listeners.
+cpus(64)=[<m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c811f98>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c811b38>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c811400>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c808fd0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c808ac8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c8086d8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c8081d0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c803dd8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c803860>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c803438>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c80cfd0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c80cac8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c824208>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c8244e0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c8247b8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c824a90>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c824d68>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c39c080>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c39c358>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c39c5c0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c39c898>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c39cb70>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c39ce48>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3a3160>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3a3438>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3a3710>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3a39e8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3a3cc0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3a3f98>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3ac2b0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3ac588>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3ac860>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3acb38>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3ace10>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3b4128>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3b4400>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3b46d8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3b49b0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3b4c88>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3b4f60>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3bc278>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3bc550>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3bc828>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3bcb00>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3bcdd8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3c50f0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3c53c8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3c56a0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3c5978>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3c5c50>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3c5f28>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3cc240>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3cc518>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3cc7f0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3ccac8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3ccda0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3d40b8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3d4390>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3d4668>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3d4940>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3d4c18>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c3d4ef0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c35b208>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7f2e6c35b4e0>])
+ingesting ./topologies_and_routing/nr_lists/kite_small_64r_nndbt.nrl
+ingesting ./topologies_and_routing/vn_maps/kite_small_64r_nndbt_none_2vns.vn
+Adding external link: l1 cache node 0 <-> noi router 0 
+Adding external link: l1 cache node 1 <-> noi router 1 
+Adding external link: l1 cache node 2 <-> noi router 2 
+Adding external link: l1 cache node 3 <-> noi router 3 
+Adding external link: l1 cache node 4 <-> noi router 4 
+Adding external link: l1 cache node 5 <-> noi router 5 
+Adding external link: l1 cache node 6 <-> noi router 6 
+Adding external link: l1 cache node 7 <-> noi router 7 
+Adding external link: l1 cache node 8 <-> noi router 8 
+Adding external link: l1 cache node 9 <-> noi router 9 
+Adding external link: l1 cache node 10 <-> noi router 10 
+Adding external link: l1 cache node 11 <-> noi router 11 
+Adding external link: l1 cache node 12 <-> noi router 12 
+Adding external link: l1 cache node 13 <-> noi router 13 
+Adding external link: l1 cache node 14 <-> noi router 14 
+Adding external link: l1 cache node 15 <-> noi router 15 
+Adding external link: l1 cache node 16 <-> noi router 16 
+Adding external link: l1 cache node 17 <-> noi router 17 
+Adding external link: l1 cache node 18 <-> noi router 18 
+Adding external link: l1 cache node 19 <-> noi router 19 
+Adding external link: l1 cache node 20 <-> noi router 20 
+Adding external link: l1 cache node 21 <-> noi router 21 
+Adding external link: l1 cache node 22 <-> noi router 22 
+Adding external link: l1 cache node 23 <-> noi router 23 
+Adding external link: l1 cache node 24 <-> noi router 24 Global frequency set at 1000000000000 ticks per second
+
+Adding external link: l1 cache node 25 <-> noi router 25 
+Adding external link: l1 cache node 26 <-> noi router 26 
+Adding external link: l1 cache node 27 <-> noi router 27 
+Adding external link: l1 cache node 28 <-> noi router 28 
+Adding external link: l1 cache node 29 <-> noi router 29 
+Adding external link: l1 cache node 30 <-> noi router 30 
+Adding external link: l1 cache node 31 <-> noi router 31 
+Adding external link: l1 cache node 32 <-> noi router 32 
+Adding external link: l1 cache node 33 <-> noi router 33 
+Adding external link: l1 cache node 34 <-> noi router 34 
+Adding external link: l1 cache node 35 <-> noi router 35 
+Adding external link: l1 cache node 36 <-> noi router 36 
+Adding external link: l1 cache node 37 <-> noi router 37 
+Adding external link: l1 cache node 38 <-> noi router 38 
+Adding external link: l1 cache node 39 <-> noi router 39 
+Adding external link: l1 cache node 40 <-> noi router 40 
+Adding external link: l1 cache node 41 <-> noi router 41 
+Adding external link: l1 cache node 42 <-> noi router 42 
+Adding external link: l1 cache node 43 <-> noi router 43 
+Adding external link: l1 cache node 44 <-> noi router 44 
+Adding external link: l1 cache node 45 <-> noi router 45 
+Adding external link: l1 cache node 46 <-> noi router 46 
+Adding external link: l1 cache node 47 <-> noi router 47 
+Adding external link: l1 cache node 48 <-> noi router 48 
+Adding external link: l1 cache node 49 <-> noi router 49 
+Adding external link: l1 cache node 50 <-> noi router 50 
+Adding external link: l1 cache node 51 <-> noi router 51 
+Adding external link: l1 cache node 52 <-> noi router 52 
+Adding external link: l1 cache node 53 <-> noi router 53 
+Adding external link: l1 cache node 54 <-> noi router 54 
+Adding external link: l1 cache node 55 <-> noi router 55 
+Adding external link: l1 cache node 56 <-> noi router 56 
+Adding external link: l1 cache node 57 <-> noi router 57 
+Adding external link: l1 cache node 58 <-> noi router 58 
+Adding external link: l1 cache node 59 <-> noi router 59 
+Adding external link: l1 cache node 60 <-> noi router 60 
+Adding external link: l1 cache node 61 <-> noi router 61 
+Adding external link: l1 cache node 62 <-> noi router 62 
+Adding external link: l1 cache node 63 <-> noi router 63 
+Adding external link (id 64): dir node 0 <-> noi router 0
+Adding external link (id 65): dir node 1 <-> noi router 8
+Adding external link (id 66): dir node 2 <-> noi router 16
+Adding external link (id 67): dir node 3 <-> noi router 24
+Adding external link (id 68): dir node 4 <-> noi router 32
+Adding external link (id 69): dir node 5 <-> noi router 40
+Adding external link (id 70): dir node 6 <-> noi router 48
+Adding external link (id 71): dir node 7 <-> noi router 56
+Adding external link (id 72): dir node 8 <-> noi router 7
+Adding external link (id 73): dir node 9 <-> noi router 15
+Adding external link (id 74): dir node 10 <-> noi router 23
+Adding external link (id 75): dir node 11 <-> noi router 31
+Adding external link (id 76): dir node 12 <-> noi router 39
+Adding external link (id 77): dir node 13 <-> noi router 47
+Adding external link (id 78): dir node 14 <-> noi router 55
+Adding external link (id 79): dir node 15 <-> noi router 63
+Adding external link (id 80): dir node 16 <-> noi router 0
+Adding external link (id 81): dir node 17 <-> noi router 8
+Adding external link (id 82): dir node 18 <-> noi router 16
+Adding external link (id 83): dir node 19 <-> noi router 24
+Adding external link (id 84): dir node 20 <-> noi router 32
+Adding external link (id 85): dir node 21 <-> noi router 40
+Adding external link (id 86): dir node 22 <-> noi router 48
+Adding external link (id 87): dir node 23 <-> noi router 56
+Adding external link (id 88): dir node 24 <-> noi router 7
+Adding external link (id 89): dir node 25 <-> noi router 15
+Adding external link (id 90): dir node 26 <-> noi router 23
+Adding external link (id 91): dir node 27 <-> noi router 31
+Adding external link (id 92): dir node 28 <-> noi router 39
+Adding external link (id 93): dir node 29 <-> noi router 47
+Adding external link (id 94): dir node 30 <-> noi router 55
+Adding external link (id 95): dir node 31 <-> noi router 63
+Adding external link (id 96): dir node 32 <-> noi router 0
+Adding external link (id 97): dir node 33 <-> noi router 8
+Adding external link (id 98): dir node 34 <-> noi router 16
+Adding external link (id 99): dir node 35 <-> noi router 24
+Adding external link (id 100): dir node 36 <-> noi router 32
+Adding external link (id 101): dir node 37 <-> noi router 40
+Adding external link (id 102): dir node 38 <-> noi router 48
+Adding external link (id 103): dir node 39 <-> noi router 56
+Adding external link (id 104): dir node 40 <-> noi router 7
+Adding external link (id 105): dir node 41 <-> noi router 15
+Adding external link (id 106): dir node 42 <-> noi router 23
+Adding external link (id 107): dir node 43 <-> noi router 31
+Adding external link (id 108): dir node 44 <-> noi router 39
+Adding external link (id 109): dir node 45 <-> noi router 47
+Adding external link (id 110): dir node 46 <-> noi router 55
+Adding external link (id 111): dir node 47 <-> noi router 63
+Adding external link (id 112): dir node 48 <-> noi router 0
+Adding external link (id 113): dir node 49 <-> noi router 8
+Adding external link (id 114): dir node 50 <-> noi router 16
+Adding external link (id 115): dir node 51 <-> noi router 24
+Adding external link (id 116): dir node 52 <-> noi router 32
+Adding external link (id 117): dir node 53 <-> noi router 40
+Adding external link (id 118): dir node 54 <-> noi router 48
+Adding external link (id 119): dir node 55 <-> noi router 56
+Adding external link (id 120): dir node 56 <-> noi router 7
+Adding external link (id 121): dir node 57 <-> noi router 15
+Adding external link (id 122): dir node 58 <-> noi router 23
+Adding external link (id 123): dir node 59 <-> noi router 31
+Adding external link (id 124): dir node 60 <-> noi router 39
+Adding external link (id 125): dir node 61 <-> noi router 47
+Adding external link (id 126): dir node 62 <-> noi router 55
+Adding external link (id 127): dir node 63 <-> noi router 63
+ingesting ./topologies_and_routing/topo_maps/64r/prev/kite_small_64r.map
+per_cpu=64000
+autotop_synth:: About to run simulation
+Possible network deadlock in vnet: 2, evn_class 1, at time: 21157000 in NI 30 and router 30 
+post_dlock=1 and dlock thresh=100000 in NI 30
+Possible network deadlock in vnet: 2, evn_class 1, at time: 24363750 in NI 23 and router 23 
+post_dlock=1 and dlock thresh=100000 in NI 23
+Possible network deadlock in vnet: 2, evn_class 1, at time: 27373500 in NI 38 and router 38 
+post_dlock=1 and dlock thresh=100000 in NI 38
+Possible network deadlock in vnet: 2, evn_class 1, at time: 30385000 in NI 39 and router 39 
+post_dlock=1 and dlock thresh=100000 in NI 39
+Possible network deadlock in vnet: 2, evn_class 1, at time: 33657000 in NI 30 and router 30 
+post_dlock=1 and dlock thresh=200000 in NI 30
+Possible network deadlock in vnet: 2, evn_class 0, at time: 36746500 in NI 47 and router 47 
+post_dlock=1 and dlock thresh=100000 in NI 47
+Possible network deadlock in vnet: 2, evn_class 1, at time: 36863750 in NI 23 and router 23 
+post_dlock=1 and dlock thresh=200000 in NI 23
+Possible network deadlock in vnet: 2, evn_class 1, at time: 37024000 in NI 37 and router 37 
+post_dlock=1 and dlock thresh=100000 in NI 37
+Possible network deadlock in vnet: 2, evn_class 0, at time: 37657000 in NI 55 and router 55 
+post_dlock=1 and dlock thresh=100000 in NI 55
+Possible network deadlock in vnet: 2, evn_class 1, at time: 37949750 in NI 46 and router 46 
+post_dlock=1 and dlock thresh=100000 in NI 46
+Possible network deadlock in vnet: 2, evn_class 1, at time: 39873500 in NI 38 and router 38 
+post_dlock=1 and dlock thresh=200000 in NI 38
+Possible network deadlock in vnet: 2, evn_class 1, at time: 42885000 in NI 39 and router 39 
+post_dlock=1 and dlock thresh=200000 in NI 39
+Possible network deadlock in vnet: 2, evn_class 1, at time: 49524000 in NI 37 and router 37 
+post_dlock=1 and dlock thresh=200000 in NI 37
+Possible network deadlock in vnet: 2, evn_class 0, at time: 50157000 in NI 55 and router 55 
+post_dlock=1 and dlock thresh=200000 in NI 55
+Possible network deadlock in vnet: 2, evn_class 1, at time: 50449750 in NI 46 and router 46 
+post_dlock=1 and dlock thresh=200000 in NI 46
+Possible network deadlock in vnet: 2, evn_class 1, at time: 58657000 in NI 30 and router 30 
+post_dlock=1 and dlock thresh=400000 in NI 30
+Possible network deadlock in vnet: 2, evn_class 1, at time: 61863750 in NI 23 and router 23 
+post_dlock=1 and dlock thresh=400000 in NI 23
+Possible network deadlock in vnet: 2, evn_class 1, at time: 67885000 in NI 39 and router 39 
+post_dlock=1 and dlock thresh=400000 in NI 39
+Possible network deadlock in vnet: 2, evn_class 1, at time: 74366250 in NI 31 and router 31 
+post_dlock=1 and dlock thresh=100000 in NI 31
+Possible network deadlock in vnet: 2, evn_class 1, at time: 85253250 in NI 63 and router 63 
+post_dlock=1 and dlock thresh=100000 in NI 63
+Possible network deadlock in vnet: 2, evn_class 1, at time: 97753250 in NI 63 and router 63 
+post_dlock=1 and dlock thresh=200000 in NI 63
+Possible network deadlock in vnet: 2, evn_class 1, at time: 108657000 in NI 30 and router 30 
+post_dlock=1 and dlock thresh=800000 in NI 30
+Possible network deadlock in vnet: 2, evn_class 1, at time: 111863750 in NI 23 and router 23 
+post_dlock=1 and dlock thresh=800000 in NI 23
+Possible network deadlock in vnet: 2, evn_class 1, at time: 129458250 in NI 37 and router 37 
+post_dlock=1 and dlock thresh=400000 in NI 37
+Possible network deadlock in vnet: 2, evn_class 1, at time: 193821000 in NI 31 and router 31 
+post_dlock=1 and dlock thresh=200000 in NI 31
+Possible network deadlock in vnet: 2, evn_class 1, at time: 205562250 in NI 44 and router 44 
+post_dlock=1 and dlock thresh=100000 in NI 44
+Possible network deadlock in vnet: 2, evn_class 1, at time: 208657000 in NI 30 and router 30 
+post_dlock=1 and dlock thresh=1600000 in NI 30
+Possible network deadlock in vnet: 2, evn_class 1, at time: 210063250 in NI 55 and router 55 
+post_dlock=1 and dlock thresh=400000 in NI 55
+Possible network deadlock in vnet: 2, evn_class 1, at time: 210087750 in NI 46 and router 46 
+post_dlock=1 and dlock thresh=400000 in NI 46
+Possible network deadlock in vnet: 2, evn_class 0, at time: 215559500 in NI 38 and router 38 
+post_dlock=1 and dlock thresh=400000 in NI 38
+Possible network deadlock in vnet: 2, evn_class 1, at time: 226182750 in NI 63 and router 63 
+post_dlock=1 and dlock thresh=400000 in NI 63
+Possible network deadlock in vnet: 2, evn_class 1, at time: 227243000 in NI 47 and router 47 
+post_dlock=1 and dlock thresh=200000 in NI 47
+Possible network deadlock in vnet: 2, evn_class 0, at time: 234373250 in NI 45 and router 45 
+post_dlock=1 and dlock thresh=100000 in NI 45
+Possible network deadlock in vnet: 2, evn_class 1, at time: 241470750 in NI 39 and router 39 
+post_dlock=1 and dlock thresh=800000 in NI 39
+Possible network deadlock in vnet: 2, evn_class 1, at time: 295455500 in NI 47 and router 47 
+post_dlock=1 and dlock thresh=400000 in NI 47
+Possible network deadlock in vnet: 2, evn_class 0, at time: 301816000 in NI 29 and router 29 
+post_dlock=1 and dlock thresh=100000 in NI 29
+Possible network deadlock in vnet: 2, evn_class 1, at time: 304826500 in NI 62 and router 62 
+post_dlock=1 and dlock thresh=100000 in NI 62
+Possible network deadlock in vnet: 2, evn_class 1, at time: 345455500 in NI 47 and router 47 
+post_dlock=1 and dlock thresh=800000 in NI 47
+Possible network deadlock in vnet: 2, evn_class 1, at time: 408657000 in NI 30 and router 30 
+post_dlock=1 and dlock thresh=3200000 in NI 30
+Possible network deadlock in vnet: 2, evn_class 0, at time: 419858000 in NI 3 and router 3 
+post_dlock=1 and dlock thresh=100000 in NI 3
+Possible network deadlock in vnet: 2, evn_class 0, at time: 505623750 in NI 21 and router 21 
+post_dlock=1 and dlock thresh=100000 in NI 21
+Possible network deadlock in vnet: 2, evn_class 1, at time: 808657000 in NI 30 and router 30 
+post_dlock=1 and dlock thresh=6400000 in NI 30
+Possible network deadlock in vnet: 2, evn_class 1, at time: 1493108500 in NI 53 and router 53 
+post_dlock=1 and dlock thresh=100000 in NI 53
+Possible network deadlock in vnet: 2, evn_class 0, at time: 1600148500 in NI 39 and router 39 
+post_dlock=1 and dlock thresh=1600000 in NI 39
+Possible network deadlock in vnet: 2, evn_class 1, at time: 1885459250 in NI 23 and router 23 
+post_dlock=1 and dlock thresh=1600000 in NI 23
+Possible network deadlock in vnet: 2, evn_class 1, at time: 2009755000 in NI 44 and router 44 
+post_dlock=1 and dlock thresh=200000 in NI 44
+Exiting @ tick 2147483750 because Network Tester completed simCycles
+build/Garnet_standalone/base/statistics.hh:280: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/Garnet_standalone/base/statistics.hh:280: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/Garnet_standalone/base/statistics.hh:280: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/Garnet_standalone/base/statistics.hh:280: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/Garnet_standalone/mem/ruby/network/garnet/GarnetNetwork.cc:128: info: Garnet version 3.0
+warn: No dot file generated. Please install pydot to generate the dot file and pdf.
+build/Garnet_standalone/sim/simulate.cc:192: info: Entering event queue @ 0.  Starting simulation...
+build/Garnet_standalone/mem/ruby/system/Sequencer.cc:615: warn: Replacement policy updates recently became the responsibility of SLICC state machines. Make sure to setMRU() near callbacks in .sm files!
