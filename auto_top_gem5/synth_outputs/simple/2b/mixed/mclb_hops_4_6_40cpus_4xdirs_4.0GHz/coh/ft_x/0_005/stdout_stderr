@@ -1,0 +1,228 @@
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 22.0.0.2
+gem5 compiled Jun 17 2023 14:31:12
+gem5 started Nov 18 2023 00:37:37
+gem5 executing on mnemosyne14.ecn.purdue.edu, pid 11445
+command line: ./build/Garnet_standalone/gem5.fast -d ./synth_outputs/simple/2b/mixed/mclb_hops_4_6_40cpus_4xdirs_4.0GHz/coh/ft_x/0_005/ configs/auto_top/auto_top_synth.py --topology EscapeVirtualNetworks --noi_routers 20 --sim-cycles 2147483647 --injectionrate 0.005 --noc_clk 4.0GHz --sys-clock 4.0GHz --ruby-clock 4.0GHz --noi_clk 3.0GHz --router_map_file configs/topologies/paper_solutions/ft_x.map --flat_vn_map_file configs/topologies/vn_maps_mclb/ft_x_mclb_hops_4vns.vn --flat_nr_map_file configs/topologies/nr_list_mclb/ft_x_mclb.nrl --ruby --mem_or_coh coh --mem-size 320000000 --num-dirs 160 --num-cpus 40 --network garnet --mem-type SimpleMemory --routing-algorithm 2 --use_escape_vns --synth_traffic --vcs-per-vnet 6 --evn_deadlock_partition 2 --evn_n_deadlock_free 1 --evn_min_n_deadlock_free 4
+
+info: Standard input is not a terminal, disabling listeners.
+ingesting configs/topologies/vn_maps_mclb/ft_x_mclb_hops_4vns.vn
+cpus(40)=[<m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29b70048>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29b70e10>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296ed128>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296ed400>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296ed6d8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296ed9b0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296edc88>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296edf60>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296f6278>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296f6550>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296f6828>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296f6b00>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29b70860>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29b5fdd8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29b6b6d8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29b6bd30>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf296f6d68>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29702080>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29702358>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29702630>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29702908>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29702be0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29702eb8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf297091d0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf297094a8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29709780>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29709a58>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29709d30>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29711048>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29711320>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf297115f8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf297118d0>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29711ba8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf29711e80>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf2971a198>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf2971a470>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf2971a748>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf2971aa20>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf2971acf8>, <m5.objects.GarnetSyntheticTraffic.GarnetSyntheticTraffic object at 0x7fbf2971afd0>])
+ingesting configs/topologies/nr_list_mclb/ft_x_mclb.nrl
+ingesting configs/topologies/vn_maps_mclb/ft_x_mclb_hops_4vns.vn
+Adding external link: l1 cache node 0 <-> noi router 0 
+Adding external link: l1 cache node 1 <-> noi router 1 
+Adding external link: l1 cache node 2 <-> noi router 2 
+Adding external link: l1 cache node 3 <-> noi router 3 
+Adding external link: l1 cache node 4 <-> noi router 4 
+Adding external link: l1 cache node 5 <-> noi router 5 
+Adding external link: l1 cache node 6 <-> noi router 6 
+Adding external link: l1 cache node 7 <-> noi router 7 
+Adding external link: l1 cache node 8 <-> noi router 8 
+Adding external link: l1 cache node 9 <-> noi router 9 
+Adding external link: l1 cache node 10 <-> noi router 10 
+Adding external link: l1 cache node 11 <-> noi router 11 
+Adding external link: l1 cache node 12 <-> noi router 12 
+Adding external link: l1 cache node 13 <-> noi router 13 
+Adding external link: l1 cache node 14 <-> noi router 14 
+Adding external link: l1 cache node 15 <-> noi router 15 
+Adding external link: l1 cache node 16 <-> noi router 16 
+Adding external link: l1 cache node 17 <-> noi router 17 
+Adding external link: l1 cache node 18 <-> noi router 18 
+Adding external link: l1 cache node 19 <-> noi router 19 
+Adding external link: l1 cache node 20 <-> noi router 0 
+Adding external link: l1 cache node 21 <-> noi router 1 
+Adding external link: l1 cache node 22 <-> noi router 2 
+Adding external link: l1 cache node 23 <-> noi router 3 
+Adding external link: l1 cache node 24 <-> noi router 4 
+Adding external link: l1 cache node 25 <-> noi router 5 
+Adding external link: l1 cache node 26 <-> noi router 6 
+Adding external link: l1 cache node 27 <-> noi router 7 
+Adding external link: l1 cache node 28 <-> noi router 8 
+Adding external link: l1 cache node 29 <-> noi router 9 
+Adding external link: l1 cache node 30 <-> noi router 10 
+Adding external link: l1 cache node 31 <-> noi router 11 
+Adding external link: l1 cache node 32 <-> noi router 12 
+Adding external link: l1 cache node 33 <-> noi router 13 
+Adding external link: l1 cache node 34 <-> noi router 14 
+Adding external link: l1 cache node 35 <-> noi router 15 
+Adding external link: l1 cache node 36 <-> noi router 16 
+Adding external link: l1 cache node 37 <-> noi router 17 
+Adding external link: l1 cache node 38 <-> noi router 18 
+Adding external link: l1 cache node 39 <-> noi router 19 
+Adding external link (id 40): dir node 0 <-> noi router 0
+Adding external link (id 41): dir node 1 <-> noi router 1
+Adding external link (id 42): dir node 2 <-> noi router 2
+Adding external link (id 43): dir node 3 <-> noi router 3
+Adding external link (id 44): dir node 4 <-> noi router 4
+Adding external link (id 45): dir node 5 <-> noi router 5
+Adding external link (id 46): dir node 6 <-> noi router 6
+Adding external link (id 47): dir node 7 <-> noi router 7
+Adding external link (id 48): dir node 8 <-> noi router 8
+Adding external link (id 49): dir node 9 <-> noi router 9
+Adding external link (id 50): dir node 10 <-> noi router 10
+Adding external link (id 51): dir node 11 <-> noi router 11
+Adding external link (id 52): dir node 12 <-> noi router 12
+Adding external link (id 53): dir node 13 <-> noi router 13
+Adding external link (id 54): dir node 14 <-> noi router 14
+Adding external link (id 55): dir node 15 <-> noi router 15
+Adding external link (id 56): dir node 16 <-> noi router 16
+Adding external link (id 57): dir node 17 <-> noi router 17
+Adding external link (id 58): dir node 18 <-> noi router 18
+Adding external link (id 59): dir node 19 <-> noi router 19
+Adding external link (id 60): dir node 20 <-> noi router 0
+Adding external link (id 61): dir node 21 <-> noi router 1
+Adding external link (id 62): dir node 22 <-> noi router 2
+Adding external link (id 63): dir node 23 <-> noi router 3
+Adding external link (id 64): dir node 24 <-> noi router 4
+Adding external link (id 65): dir node 25 <-> noi router 5
+Adding external link (id 66): dir node 26 <-> noi router 6
+Adding external link (id 67): dir node 27 <-> noi router 7
+Adding external link (id 68): dir node 28 <-> noi router 8
+Adding external link (id 69): dir node 29 <-> noi router 9
+Adding external link (id 70): dir node 30 <-> noi router 10
+Adding external link (id 71): dir node 31 <-> noi router 11
+Adding external link (id 72): dir node 32 <-> noi router 12
+Adding external link (id 73): dir node 33 <-> noi router 13
+Adding external link (id 74): dir node 34 <-> noi router 14
+Adding external link (id 75): dir node 35 <-> noi router 15
+Adding external link (id 76): dir node 36 <-> noi router 16
+Adding external link (id 77): dir node 37 <-> noi router 17
+Adding external link (id 78): dir node 38 <-> noi router 18
+Adding external link (id 79): dir node 39 <-> noi router 19
+Adding external link (id 80): dir node 40 <-> noi router 0
+Adding external link (id 81): dir node 41 <-> noi router 1
+Adding external link (id 82): dir node 42 <-> noi router 2
+Adding external link (id 83): dir node 43 <-> noi router 3
+Adding external link (id 84): dir node 44 <-> noi router 4
+Adding external link (id 85): dir node 45 <-> noi router 5
+Adding external link (id 86): dir node 46 <-> noi router 6
+Adding external link (id 87): dir node 47 <-> noi router 7
+Adding external link (id 88): dir node 48 <-> noi router 8
+Adding external link (id 89): dir node 49 <-> noi router 9
+Adding external link (id 90): dir node 50 <-> noi router 10
+Adding external link (id 91): dir node 51 <-> noi router 11
+Adding external link (id 92): dir node 52 <-> noi router 12
+Adding external link (id 93): dir node 53 <-> noi router 13
+Adding external link (id 94): dir node 54 <-> noi router 14
+Adding external link (id 95): dir node 55 <-> noi router 15
+Adding external link (id 96): dir node 56 <-> noi router 16
+Adding external link (id 97): dir node 57 <-> noi router 17
+Adding external link (id 98): dir node 58 <-> noi router 18
+Adding external link (id 99): dir node 59 <-> noi router 19
+Adding external link (id 100): dir node 60 <-> noi router 0
+Adding external link (id 101): dir node 61 <-> noi router 1
+Adding external link (id 102): dir node 62 <-> noi router 2
+Adding external link (id 103): dir node 63 <-> noi router 3
+Adding external link (id 104): dir node 64 <-> noi router 4
+Adding external link (id 105): dir node 65 <-> noi router 5
+Adding external link (id 106): dir node 66 <-> noi router 6
+Adding external link (id 107): dir node 67 <-> noi router 7
+Adding external link (id 108): dir node 68 <-> noi router 8
+Adding external link (id 109): dir node 69 <-> noi router 9
+Adding external link (id 110): dir node 70 <-> noi router 10
+Adding external link (id 111): dir node 71 <-> noi router 11
+Adding external link (id 112): dir node 72 <-> noi router 12
+Adding external link (id 113): dir node 73 <-> noi router 13
+Adding external link (id 114): dir node 74 <-> noi router 14
+Adding external link (id 115): dir node 75 <-> noi router 15
+Adding external link (id 116): dir node 76 <-> noi router 16
+Adding external link (id 117): dir node 77 <-> noi router 17
+Adding external link (id 118): dir node 78 <-> noi router 18
+Adding external link (id 119): dir node 79 <-> noi router 19
+Adding external link (id 120): dir node 80 <-> noi router 0
+Adding external link (id 121): dir node 81 <-> noi router 1
+Adding external link (id 122): dir node 82 <-> noi router 2
+Adding external link (id 123): dir node 83 <-> noi router 3
+Adding external link (id 124): dir node 84 <-> noi router 4
+Adding external link (id 125): dir node 85 <-> noi router 5
+Adding external link (id 126): dir node 86 <-> noi router 6
+Adding external link (id 127): dir node 87 <-> noi router 7
+Adding external link (id 128): dir node 88 <-> noi router 8
+Adding external link (id 129): dir node 89 <-> noi router 9
+Adding external link (id 130): dir node 90 <-> noi router 10
+Adding external link (id 131): dir node 91 <-> noi router 11
+Adding external link (id 132): dir node 92 <-> noi router 12
+Adding external link (id 133): dir node 93 <-> noi router 13
+Adding external link (id 134): dir node 94 <-> noi router 14
+Adding external link (id 135): dir node 95 <-> noi router 15
+Adding external link (id 136): dir node 96 <-> noi router 16
+Adding external link (id 137): dir node 97 <-> noi router 17
+Adding external link (id 138): dir node 98 <-> noi router 18
+Adding external link (id 139): dir node 99 <-> noi router 19
+Adding external link (id 140): dir node 100 <-> noi router 0
+Adding external link (id 141): dir node 101 <-> noi router 1
+Adding external link (id 142): dir node 102 <-> noi router 2
+Adding external link (id 143): dir node 103 <-> noi router 3
+Adding external link (id 144): dir node 104 <-> noi router 4
+Adding external link (id 145): dir node 105 <-> noi router 5
+Adding external link (id 146): dir node 106 <-> noi router 6
+Adding external link (id 147): dir node 107 <-> noi router 7
+Adding external link (id 148): dir node 108 <-> noi router 8
+Adding external link (id 149): dir node 109 <-> noi router 9
+Adding external link (id 150): dir node 110 <-> noi router 10
+Adding external link (id 151): dir node 111 <-> noi router 11
+Adding external link (id 152): dir node 112 <-> noi router 12
+Adding external link (id 153): dir node 113 <-> noi router 13
+Adding external link (id 154): dir node 114 <-> noi router 14
+Adding external link (id 155): dir node 115 <-> noi router 15
+Adding external link (id 156): dir node 116 <-> noi router 16
+Adding external link (id 157): dir node 117 <-> noi router 17
+Adding external link (id 158): dir node 118 <-> noi router 18
+Adding external link (id 159): dir node 119 <-> noi router 19
+Adding external link (id 160): dir node 120 <-> noi router 0
+Adding external link (id 161): dir node 121 <-> noi router 1
+Adding external link (id 162): dir node 122 <-> noi router 2
+Adding external link (id 163): dir node 123 <-> noi router 3
+Adding external link (id 164): dir node 124 <-> noi router 4
+Adding external link (id 165): dir node 125 <-> noi router 5
+Adding external link (id 166): dir node 126 <-> noi router 6
+Adding external link (id 167): dir node 127 <-> noi router 7
+Adding external link (id 168): dir node 128 <-> noi router 8
+Adding external link (id 169): dir node 129 <-> noi router 9
+Adding external link (id 170): dir node 130 <-> noi router 10
+Adding external link (id 171): dir node 131 <-> noi router 11
+Adding external link (id 172): dir node 132 <-> noi router 12
+Adding external link (id 173): dir node 133 <-> noi router 13
+Adding external link (id 174): dir node 134 <-> noi router 14
+Adding external link (id 175): dir node 135 <-> noi router 15
+Adding external link (id 176): dir node 136 <-> noi router 16
+Adding external link (id 177): dir node 137 <-> noi router 17
+Adding external link (id 178): dir node 138 <-> noi router 18
+Adding external link (id 179): dir node 139 <-> noi router 19
+Adding external link (id 180): dir node 140 <-> noi router 0
+Adding external link (id 181): dir node 141 <-> noi router 1
+Adding external link (id 182): dir node 142 <-> noi router 2
+Adding external link (id 183): dir node 143 <-> noi router 3
+Adding external link (id 184): dir node 144 <-> noi router 4
+Adding external link (id 185): dir node 145 <-> noi router 5
+Adding external link (id 186): dir node 146 <-> noi router 6
+Adding external link (id 187): dir node 147 <-> noi router 7
+Adding external link (id 188): dir node 148 <-> noi router 8
+Adding external link (id 189): dir node 149 <-> noi router 9
+Adding external link (id 190): dir node 150 <-> noi router 10
+Adding external link (id 191): dir node 151 <-> noi router 11
+Adding external link (id 192): dir node 152 <-> noi router 12
+Adding external link (id 193): dir node 153 <-> noi router 13
+Adding external link (id 194): dir node 154 <-> noi router 14
+Adding external link (id 195): dir node 155 <-> noi router 15Global frequency set at 1000000000000 ticks per second
+
+Adding external link (id 196): dir node 156 <-> noi router 16
+Adding external link (id 197): dir node 157 <-> noi router 17
+Adding external link (id 198): dir node 158 <-> noi router 18
+Adding external link (id 199): dir node 159 <-> noi router 19
+ingesting configs/topologies/paper_solutions/ft_x.map
+per_cpu=8000000
+initing a garnet network
+autotop_synth:: About to run simulation
+Exiting @ tick 2147483750 because Network Tester completed simCycles
+build/Garnet_standalone/base/statistics.hh:280: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/Garnet_standalone/base/statistics.hh:280: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/Garnet_standalone/base/statistics.hh:280: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/Garnet_standalone/base/statistics.hh:280: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/Garnet_standalone/mem/ruby/network/garnet/GarnetNetwork.cc:124: info: Garnet version 3.0
+warn: No dot file generated. Please install pydot to generate the dot file and pdf.
+build/Garnet_standalone/sim/simulate.cc:194: info: Entering event queue @ 0.  Starting simulation...
+build/Garnet_standalone/mem/ruby/system/Sequencer.cc:613: warn: Replacement policy updates recently became the responsibility of SLICC state machines. Make sure to setMRU() near callbacks in .sm files!

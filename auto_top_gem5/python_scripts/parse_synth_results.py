@@ -70,9 +70,6 @@ for root, dirs, files, in os.walk(data_dir):
         #     continue
         root_split = root.split('/')
 
-        # print(f'{root_split}')
-        # quit()
-
         cur_file = open(cur_path)
         lines = cur_file.readlines()
 
@@ -86,7 +83,7 @@ for root, dirs, files, in os.walk(data_dir):
 
 
         # if 'shuffle' in root_split or 'neighbor' in root_split:
-        uses_traf = True
+        #     uses_traf = True
 
         # input(f'uses_traf={uses_traf}')
         # input(f'root_split={root_split}')

@@ -1139,7 +1139,7 @@ def gen_synth_20r_3subplots(infile_name='./synth_outputs/simple_2b.csv', param_m
     # axes[2].set_xticks(xmin,minor=True)
 
     # coh
-    if mem_or_coh == 'coh':
+    if param_mem_or_coh == 'coh':
         max_x = 1.175
 
     # mem
@@ -2322,6 +2322,7 @@ def main():
     except:
         n_routers = 20
 
+    print(f'sys.argv={sys.argv}')
 
     # file_20r = 'synth_outputs/csvs/simple_compare_nndbt_prev_mclb_ours_same_4GHz_20nov.csv'
     # alg_20r = 'compare_nndbt_prev_mclb_ours_same_4GHz_22feb24'
@@ -2360,7 +2361,6 @@ def main():
 
     # gen_synth_30r_mem()
     #gen_synth_30r()
-    pass
 
 
 if __name__ == '__main__':
