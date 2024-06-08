@@ -1,0 +1,19 @@
+p 20 --partitions b8x8,i4x4 --ref 5 --direct auto --b-pyramid --weightb --mixed-refs --no-fast-pskip --me umh --subme 7 --analyse b8x8,i4x4 --threads 64 -o eledream.264 eledream_640x360_128.y4m':
+[PARSEC] [---------- Beginning of output ----------]
+PARSEC Benchmark Suite Version 3.0-beta-20150206
+[HOOKS] PARSEC Hooks Version 1.2
+yuv4mpeg: 640x360@25/1fps, 0:0
+[HOOKS] Entering ROI
+*** stack smashing detected ***: <unknown> terminated
+/home/gem5/parsec-benchmark/bin/parsecmgmt: line 1222:  2529 Aborted                 /home/gem5/parsec-benchmark/pkgs/apps/x264/inst/amd64-linux.gcc-hooks/bin/x264 --quiet --qp 20 --partitions b8x8,i4x4 --ref 5 --direct auto --b-pyramid --weightb --mixed-refs --no-fast-pskip --me umh --subme 7 --analyse b8x8,i4x4 --threads 64 -o eledream.264 eledream_640x360_128.y4m
+
+real	0m0.091s
+user	0m0.026s
+sys	0m0.032s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Bienia. Benchmarking Modern Multiprocessors. Ph.D. Thesis, 2011.
+[PARSEC]
+[PARSEC] Done.

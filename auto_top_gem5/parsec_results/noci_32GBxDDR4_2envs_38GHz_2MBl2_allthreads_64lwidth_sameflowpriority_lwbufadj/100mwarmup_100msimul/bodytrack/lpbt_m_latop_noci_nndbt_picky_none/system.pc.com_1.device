@@ -1,0 +1,14 @@
+lPose.txt
+sequenceB_4/PoseParameters.txt
+[PARSEC] Running 'time /home/gem5/parsec-benchmark/pkgs/apps/bodytrack/inst/amd64-linux.gcc-hooks/bin/bodytrack sequenceB_4 4 4 4000 5 0 64':
+[PARSEC] [---------- Beginning of output ----------]
+PARSEC Benchmark Suite Version 3.0-beta-20150206
+[HOOKS] PARSEC Hooks Version 1.2
+Threading with Posix Threads
+Number of threads : 64
+Using dataset : sequenceB_4/
+4000 particles with 5 annealing layers
+
+[HOOKS] Entering ROI
+Processing frame 0
+Processing frame 1
