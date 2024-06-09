@@ -2,6 +2,10 @@
 
 Runs both NetSmith and LPBT formulations
 
+The problems are largely defined by three parameters: number of routers, number of ports, and the longest link allowed (e.g. small, medium, large). These parameters are often encoded into the names of generated topologies such as "my_20r_4p_25ll_topology.map". The integer (20) next to the "r" is number of routers, the integer (4) next to the "p" is number of ports, and the integer (25) next to "ll" is longest link.
+
+IMPORTANT: "25ll" was a vestige of old code and signifies that the longest link is 2.5 units long (decimal removed for simple filenames) where each router is assumed to be on a grid with basic length of 1. That is to say, in the small topologies, the longest link is 1.5 units because it corresponds to a (1,1) link; medium is 2.0 for (2,0)/(0,2); and large is 2.5 for (2,1)/(1,2).
+
 #### Initialization and Setup
 
 First time using this directory
