@@ -90,6 +90,64 @@ Within this project, a few custom file types are used
 -  .nrl - ``next router list'' is a list of 2D routing tables of next hop for each router in the network
 -  .vn - ``virtual network'' map is a 2D table of the designated escape virtual network for a source, destination pair
 
+## Paper Figures
+
+#### Figure 5
+
+```
+cd auto_top_gem5
+
+# (optional) reparse
+source bash/parse_synth_20r_fig5.sh
+
+source bash/plot_synth_20r_fig5.sh
+```
+
+#### Figure 6
+
+```
+cd auto_top_gem5
+
+# (optional) reparse
+source bash/parse_parsec_fig6.sh
+
+source bash/plot_parsec_fig6.sh
+```
+
+#### Figure 7
+
+```
+cd dsent
+
+# (optional) reparse
+source bash/calculate_results_fig7.sh
+
+source bash/plot_figure_fig7.sh
+```
+
+#### Figure 8
+
+```
+cd auto_top_gem5
+
+# (optional) reparse
+source bash/parse_synth_64r_fig8.sh
+
+source bash/plot_synth_64r_fig8.sh
+```
+
+## Virtual Machine
+
+A .vdi is available at: TODO
+
+username: netsmith
+password: password
+
+## Large Files
+
+Large files on Zenodo
+- Full System PARSEC Checkpoints for NetSmith gem5 Simulation : https://zenodo.org/records/11529546
+- Full System PARSEC Disk Image and Kernel for NetSmith gem5 Simulation : https://zenodo.org/records/11529766
 
 ## All Commands for a Full Run Through
 
