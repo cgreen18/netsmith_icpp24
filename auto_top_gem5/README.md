@@ -2,6 +2,15 @@
 
 Original gem5 README is "README" (no .md)
 
+
+## Setup and Init
+
+Requires
+- linux kernel (public) : 
+- PARSEC disk image (public) :
+- PARSEC checkpoints 
+- 
+
 ## Synthetic
 
 

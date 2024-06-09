@@ -15,6 +15,10 @@ This flow completes
 5. PARSEC simulation
 6. DSENT analysis
 
+The repository serves two purposes. First, to reproduce the results given in the submitted paper and second, to give an example of using the software to generate and test topologies.
+The first objective is solved by providing the results and scripts to plot for the twentry router topologies utilized in the paper.
+The second objective is solved by running through an example simple, twelve router topology. A smaller topology is used for speed.
+
 ### Directories
 
 #### 1) ./topology_generation
