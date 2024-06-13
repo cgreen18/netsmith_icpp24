@@ -300,6 +300,7 @@ with open(infile_name, 'r') as inf:
         topo = topo.replace('_augmclb_hops','')
         topo = topo.replace('_picky_cohmem_prioritized_doubley_memory_mclb_hops','')
         topo = topo.replace('_nndbt_injej_none','')
+        topo = topo.replace('_nndbt_picky_none','')
 
         renamed_topo = rename_dict[topo]
 
