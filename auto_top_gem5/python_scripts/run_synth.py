@@ -35,7 +35,7 @@ import argparse
 import numpy as np
 
 
-MAX_PROCS = 28
+MAX_PROCS = 4
 
 global num_threads
 num_threads = 0
@@ -311,9 +311,9 @@ class BenchmarkRun:
         # comment in/out to test script
         ###############################################################
 
-        print(f'cmd={cmd}')
-        print(' '.join(cmd))
-        return
+        # print(f'cmd={cmd}')
+        # print(' '.join(cmd))
+        # return
 
         res = None
 
@@ -521,7 +521,8 @@ def main():
     global num_threads
     num_threads = len(threads)
 
-    print("Dispatching " + str(num_threads) + " threads")
+    print("Loaded " + str(num_threads) + " threads")
+    print("Dispatching " + str(MAX_PROCS) + " at a time")
 
     for thread in threads:
         thread.start()
