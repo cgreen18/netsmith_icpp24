@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# usage: ./bash/synth_single_topo.sh <map> <nrl> <vn>
-# e.g. "source ./bash/synth_inj_sweep_topo.sh ./topologies_and_routing/topo_maps/my_12r_topo.map ./topologies_and_routing/nr_lists/my_12r_topo_mclb.nrl ./topologies_and_routing/vn_maps/my_12r_topo_mclb_hops_4vns.vn 0.02 0.2 0.02 2.7GHz 4 6 12 12 2147483647"
+# usage: ./bash/synth_single_topo.sh <map> <nrl> <vn> <noi-freq> <n-evns> <n-vcs> <n-routers> <n-cpus> <dir-mult> <inj-start> <inj-end> <inj-step> <n-cycles>
+# e.g. "source ./bash/synth_inj_sweep_topo.sh ./topologies_and_routing/topo_maps/my_12r_topo.map ./topologies_and_routing/nr_lists/my_12r_topo_mclb.nrl ./topologies_and_routing/vn_maps/my_12r_topo_mclb_hops_4vns.vn 2.7GHz 4 6 12 12 1 0.01 0.2 0.01 2147483647"
 
 # max cycles = 2147483647
 
