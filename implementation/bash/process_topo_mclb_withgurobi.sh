@@ -10,7 +10,9 @@
 python3 python_scripts/routing.py --alg all_naive --filename ${2}/${1}.map
 
 
-python3 open_source_solvers/mclb_scipy_mip.py --allpath_list ./topologies_and_routing/allpath_lists/${1}.rallpaths --out_name ./topologies_and_routing/routepath_lists/${1}_mclb.paths
+
+./gurobi/bin/mclb -t ${2}/${1}.map -pl ./topologies_and_routing/allpath_lists/${1}.rallpaths -of ./topologies_and_routing/routepath_lists/${1}_mclb.paths --num_routers ${3}
+
 
 
 python3 python_scripts/mclb_pruner.py ./topologies_and_routing/routepath_lists/${1}_mclb.paths

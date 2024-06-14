@@ -21,6 +21,13 @@ To set up Python libraries
 source venv_implementation/bin/activate
 ```
 
+Make MCLB for Gurobi and setup licenses
+```
+cd gurobi
+make mclb
+cd ..
+source setup.sh
+```
 
 ## Normal Graphs (non-NoCI)
 
