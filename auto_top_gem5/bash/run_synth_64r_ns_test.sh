@@ -1,7 +1,14 @@
 #!/bin/bash
 
+
+# max for synthetic traffic (unless you change some source code)
 n_cycles=2147483647
-n_cycles=1000
+
+if [ $# -gt 0 ]; then
+    n_cycles="$1"
+
+fi
+
 
 source ./bash/synth_inj_sweep_topo.sh ./topologies_and_routing/topo_maps/64r/ours/ns_s_latop_64r.map ./topologies_and_routing/nr_lists/ns_s_latop_64r_mclb.nrl ./topologies_and_routing/vn_maps/ns_s_latop_64r_mclb_hops_9vns.vn 3.6GHz 9 12 64 64 4 0.01 0.24 0.01 $n_cycles &
 
