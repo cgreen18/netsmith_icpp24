@@ -1,6 +1,0 @@
- Running 'time /home/gem5/parsec-benchmark/pkgs/apps/swaptions/inst/amd64-linux.gcc-hooks/bin/swaptions -ns 64 -sm 40000 -nt 64':
-[PARSEC] [---------- Beginning of output ----------]
-PARSEC Benchmark Suite Version 3.0-beta-20150206
-[HOOKS] PARSEC Hooks Version 1.2
-Number of Simulations: 40000,  Number of threads: 64 Number of swaptions: 64
-[HOOKS] Entering ROI
