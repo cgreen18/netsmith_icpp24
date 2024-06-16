@@ -6,3 +6,10 @@ gem5/.pre-commit-config.yaml
 .vscode/
 *gem5/build/*
 gem5/slurm/*
+dsent/build/ext/*
+implementation/files/
+topology_generation/gurobi/bin/*
+implementation/topologies_and_routing/*
+implementation/gurobi/bin/*
+open_source_solvers/*
+gem5/*

@@ -1,0 +1,1 @@
+bench,config,description,simTicks,numCycles,simInsts,average_packet_latency,cumulativeCycles,maxCycles,geoIPC,mpki

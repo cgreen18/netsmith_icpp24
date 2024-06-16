@@ -16,7 +16,7 @@ This flow completes
 6. DSENT analysis
 
 The repository serves two purposes. First, to reproduce the results given in the submitted paper and second, to give an example of using the software to generate and test topologies.
-The first objective is solved by providing the results and scripts to plot for the twentry router topologies utilized in the paper.
+The first objective is solved by providing the results and scripts to plot for the 20/64/84 router topologies utilized in the paper.
 The second objective is solved by running through an example (new) twenty router topology.
 
 ### Computation and Time Requirements
@@ -48,7 +48,8 @@ password: password
 ### Large Files
 
 Large files on Zenodo
-- (TODO FIX) Full System PARSEC Checkpoints for NetSmith gem5 Simulation : https://zenodo.org/records/11529546
+- (Full System PARSEC Checkpoints for NetSmith gem5 Simulation : https://zenodo.org/records/11529546
+    - use "version 2" since first upload was missing fluidanimate
 - Full System PARSEC Disk Image and Kernel for NetSmith gem5 Simulation : https://zenodo.org/records/11529766
 
 
