@@ -1,0 +1,7 @@
+nput setup.
+[PARSEC] Running 'time /home/gem5/parsec-benchmark/pkgs/kernels/streamcluster/inst/amd64-linux.gcc-hooks/bin/streamcluster 10 20 128 16384 16384 1000 none output.txt 64':
+[PARSEC] [---------- Beginning of output ----------]
+PARSEC Benchmark Suite Version 3.0-beta-20150206
+[HOOKS] PARSEC Hooks Version 1.2
+[HOOKS] Entering ROI
+read 16384 points

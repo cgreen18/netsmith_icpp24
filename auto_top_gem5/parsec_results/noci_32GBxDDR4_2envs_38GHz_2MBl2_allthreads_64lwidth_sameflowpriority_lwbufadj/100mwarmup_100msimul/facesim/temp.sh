@@ -1,0 +1,12 @@
+
+rm -rf *picky*
+
+mv butter_donut_x_noci_nndbt_injej_none/ butter_donut_x_noci_nndbt_picky_none/
+mv dbl_bfly_x_noci_nndbt_injej_none/ dbl_bfly_x_noci_nndbt_picky_none/
+mv ft_x_noci_nndbt_injej_none/ ft_x_noci_nndbt_picky_none/
+mv kite_large_noci_nndbt_injej_none/ kite_large_noci_nndbt_picky_none/
+mv kite_medium_noci_nndbt_injej_none/ kite_medium_noci_nndbt_picky_none/
+mv kite_small_noci_nndbt_injej_none/ kite_small_noci_nndbt_picky_none/
+mv lpbt_m_latop_noci_nndbt_injej_none/ lpbt_m_latop_noci_nndbt_picky_none/
+mv lpbt_s_latop_noci_nndbt_injej_none/ lpbt_s_latop_noci_nndbt_picky_none/
+mv lpbt_s_power_noci_nndbt_injej_none/ lpbt_s_power_noci_nndbt_picky_none/
