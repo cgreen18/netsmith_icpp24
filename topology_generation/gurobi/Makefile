@@ -26,5 +26,9 @@ auto_top_db: src/auto_top.cpp
 lpbt: src/lpbt.cpp
 	$(CPP) $(CARGS) -o bin/lpbt src/lpbt.cpp -I$(INC) $(CPPLIB) -lm
 
+all: auto_top lpbt
+
+.DEFAULT_GOAL := all
+
 clean:
 	rm -rf bin/
