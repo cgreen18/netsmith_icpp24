@@ -18,6 +18,11 @@ To set up GUROBI library and license paths (on Purdue servers)
 source setup.sh
 ```
 
+To make
+```
+make auto_top
+```
+
 Probably similar for other machines
 
 ## NetSmith (auto_top)
