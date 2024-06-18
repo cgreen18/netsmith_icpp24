@@ -7,9 +7,9 @@ n_routers="20"
 CMD="python3 python_scripts/graph_synth_freqadjusted.py $infile $alg coh uniform $n_routers"
 
 echo "${CMD}"
-# $CMD
+$CMD
 
 CMD="python3 python_scripts/graph_synth_freqadjusted.py $infile $alg mem uniform $n_routers"
 
 echo "${CMD}"
-# $CMD
+$CMD
