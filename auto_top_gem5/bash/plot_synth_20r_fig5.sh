@@ -13,3 +13,5 @@ CMD="python3 python_scripts/graph_synth_freqadjusted.py $infile $alg mem uniform
 
 echo "${CMD}"
 $CMD
+
+echo "Complete. Look in synth_outputs/graphs/"
