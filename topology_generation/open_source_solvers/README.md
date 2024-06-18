@@ -9,6 +9,24 @@ The problems are largely defined by three parameters: number of routers, number 
 
 IMPORTANT: "25ll" was a vestige of old code and signifies that the longest link is 2.5 units long (decimal removed for simple filenames) where each router is assumed to be on a grid with basic length of 1. That is to say, in the small topologies, the longest link is 1.5 units because it corresponds to a (1,1) link; medium is 2.0 for (2,0)/(0,2); and large is 2.5 for (2,1)/(1,2).
 
+## Setup
+
+
+Need to install libraries. Recommended to use venv
+
+
+```
+source init.sh
+source install_tools.sh
+source setup.sh
+```
+
+On every usage (if you log off)
+```
+source setup.sh
+```
+
+# Running
 
 ## NetSmith (auto_top)
 
