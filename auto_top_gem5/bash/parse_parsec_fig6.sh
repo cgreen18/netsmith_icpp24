@@ -15,9 +15,6 @@ python3 python_scripts/parse_parsec_results.py parsec_results/noci_32GBxDDR4_2en
 
 outfile="parsec_results/csvs/noci_mclb_and_nndbt_$mydate.csv"
 
-# cat parsec_results/csvs/noci_mclb_$mydate.csv | grep "picky\|mesh\|bench" > $outfile
-# tail -n +2 parsec_results/csvs/noci_nndbt_$mydate.csv | grep "injej" >> $outfile
-
 cat parsec_results/csvs/noci_mclb_$mydate.csv > $outfile
 tail -n +2 parsec_results/csvs/noci_nndbt_$mydate.csv >> $outfile
 
