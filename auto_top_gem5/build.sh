@@ -1,8 +1,13 @@
 #!/bin/bash
 
 
-scons-3 build/Garnet_standalone/gem5.fast
-scons-3 build/X86/gem5.fast
+N_PROCS=$(nproc)
 
-ml gcc
+echo "Building with $N_PROCS processors"
+
+scons-3 -j $N_PROCS build/Garnet_standalone/gem5.fast
+scons-3 -j $N_PROCS build/X86/gem5.fast
+
+# for purdue servers. let it fail otherwise
+# ml gcc
 

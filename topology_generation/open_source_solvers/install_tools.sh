@@ -29,11 +29,4 @@ pip3 install --upgrade pip
 
 
 # for 3.11 issues with cbclib wo this
-pip3 install wsl
-pip3 install scipy
-pip3 install mip
-# cbc 0.0.5 for issues with glibc 2.27+ (ecn has 2.17)
-pip3 install cbc
-
-
-pip3 install ortools
+pip3 install -r requirements.txt

@@ -38,9 +38,11 @@ The second objective is solved by running through an example (new) twenty router
     - For a single topology, to sweep and find saturation point takes 10-20 injection rates
 - Longest PARSEC benchmark, swaptions, takes ~3 days per topology/run
 
+
+
 ### Virtual Machine
 
-A .vdi is available at: TODO
+A .voa was not able to upload to Zenodo... Kept failing mid-upload after many attempts
 
 username: netsmith
 password: password
@@ -51,8 +53,48 @@ Large files on Zenodo
 - (Full System PARSEC Checkpoints for NetSmith gem5 Simulation : https://zenodo.org/records/11529546
     - use "version 2" since first upload was missing fluidanimate
 - Full System PARSEC Disk Image and Kernel for NetSmith gem5 Simulation : https://zenodo.org/records/11529766
+- NetSmith and LPBT models for Open-Source Solvers : https://zenodo.org/records/11861900 
+
+## Setup and Installation
+
+For a user first using the repo. First, download all large files (checkpoints, disk image, and models) from above and place all four tars in the main repository directory. In general, requires sudo permissions
+
+```
+# opens and moves files
+source uncompress.sh
+
+# install system level packages
+source install_tools.sh
+source setup_vm.sh
 
 
+# (optional) build gurobi
+cd topology_generation/gurobi
+source init.sh
+make
+cd ../..
+
+# build open-source
+cd topology_generation/open_source_solvers
+source init.sh
+cd ../..
+
+# build gem5
+cd auto_top_gem5
+source build.sh
+cd ..
+
+# build dsent
+cd dsent
+source build.sh
+source setup.sh
+cd ..
+```
+
+Within every directory, when you want to run something...
+```
+source setup.sh
+```
 
 ### Directories
 

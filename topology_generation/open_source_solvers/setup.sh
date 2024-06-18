@@ -1,5 +1,6 @@
 #!/bin/bash
 
 # deactivate if in another venv
+deactivate
 
-source venv_scipymilp_py311/bin/activate
+source ../../venv_netsmith/bin/activate

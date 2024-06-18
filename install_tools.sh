@@ -18,6 +18,12 @@ make -j $N_PROCS
 # for new exe "python3.11"
 sudo make altinstall
 
+# replace default
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.11 1
+export PATH="/usr/local/bin:$PATH"
+
+cd ..
+
 # for purdue servers. Let fail
 # load python with scipy >= 1.9.0
 ml python3/3.11
