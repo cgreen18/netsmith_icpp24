@@ -33,9 +33,10 @@ import sys
 import threading
 import argparse
 import numpy as np
+import ast
 
 
-MAX_PROCS = 4
+MAX_PROCS = 15
 
 global num_threads
 num_threads = 0
@@ -55,7 +56,6 @@ home = os.getcwd()
 setup = ['module','load','gcc',';']
 gem5_build = './build/Garnet_standalone/gem5.fast'
 conf_script = 'configs/netsmith/netsmith_synth.py'
-topo_conf_script = 'EscapeVirtualNetworks'
 topology_to_n_routers_dict = {
     'cmesh_x':'20',
     'butter_donut_x':'20',
@@ -131,12 +131,14 @@ base_flags = ['--network','garnet',
         '--mem-type', 'SimpleMemory',
         #'--garnet-deadlock-threshold','50000000',
         '--routing-algorithm', '2',
-        '--use_escape_vns',
+        # not always true. may be datelined
+        # '--use_escape_vns',
         # '--vcs-per-vnet','6',
         # '--evn_deadlock_partition','2',
         # '--evn_n_deadlock_free','1',
         # '--evn_min_n_deadlock_free','4',
         '--synth_traffic',
+        '--ruby',
 
         # allows non power of two # of directories
         # '--mem_size','536870900'
@@ -163,7 +165,7 @@ class BenchmarkRun:
         else:
             return f'{sc//1000000000}b'
 
-    def __init__(self, map_file,n_routers, sim_cycle, inj_rate, mem_or_coh, n_evns, tot_vcs, noc_clk, hetero, n_cpus, dir_mult, traf_type='uniform',nr_list=None,vn_map=None, noi_freq=None):
+    def __init__(self, map_file,n_routers, sim_cycle, inj_rate, mem_or_coh, n_evns, tot_vcs, noc_clk, hetero, n_cpus, dir_mult, traf_type='uniform_random',nr_list=None,vn_map=None, noi_freq=None, is_dateline_vcs=False, custom_tm=None):
 
         # simulation configs
         self.sim_cycles = sim_cycle
@@ -173,6 +175,7 @@ class BenchmarkRun:
         self.dir_mult = dir_mult
 
         self.traf_type = traf_type
+        self.custom_tm = custom_tm
 
         # topology configs
         self.topology = map_file.replace('.map','').split('/')[-1]
@@ -223,9 +226,10 @@ class BenchmarkRun:
                 self.noi_clk = noi_clks_dict[top_type]
             except:
                 print(f'Key error on topology {self.topology} w/ key={top_type} for noi freq.')
-                quit(-1)
-        elif hetero:
-            self.noi_clk = noi_freq
+                self.noi_clk = f'{noi_freq}GHz'
+
+
+        self.is_dateline_vcs = is_dateline_vcs
 
         #self.output_dir = f'./outputs/{self.sim_cycles}/{self.noi_clk}/{self.mem_or_coh}/{self.topology}/{inj_rate_str}/''
 
@@ -234,9 +238,18 @@ class BenchmarkRun:
         # output
         # ------
 
+        lb_and_alg = '_'.join( vn_map.split('_')[-3:-1])
+        lb_and_alg = ''
+
         desc = f'{self.n_evns}evns_{self.tot_vcs}vcs_{self.n_cpus}cpus_{self.dir_mult}xdirs_{self.noc_clk}'
 
-        out_path_suffix = f'{self.name_sim_cycles(self.sim_cycles)}/{sd_str}/{self.traf_type}/{desc}/{self.mem_or_coh}/{self.topology}/{inj_rate_str}/'
+        # out_path_suffix = f'{self.name_sim_cycles(self.sim_cycles)}/{sd_str}/{self.traf_type}/{desc}/{self.mem_or_coh}/{self.topology}/{inj_rate_str}/'
+        out_path_suffix = f'{self.name_sim_cycles(self.sim_cycles)}/{sd_str}/{self.traf_type}/{desc}/{self.mem_or_coh}/{self.topology}_{lb_and_alg}/{inj_rate_str}/'
+
+        # input(f'lb_and_alg = {lb_and_alg} ')
+        # input(f'inj_rate_str={inj_rate_str}')
+        # input(f'self.topology={self.topology}')
+        # input(f'outdir,out_path_suffix={(outdir,out_path_suffix)}')
 
         self.output_dir = os.path.join(outdir,out_path_suffix)
 
@@ -252,8 +265,10 @@ class BenchmarkRun:
         cmd += [gem5_build,
                 # '--stdout-file log.out --stderr-file log.err -r -e',
                 '-d', self.output_dir,
+                # dont write configs due to space
+                # '--dump-config= ','--json-config= ',
                 conf_script,
-                '--topology',topo_conf_script,
+
                 '--noi_routers',self.n_routers,
                 '--sim-cycles',self.sim_cycles,
                 '--injectionrate',self.inj_rate,
@@ -263,11 +278,20 @@ class BenchmarkRun:
                 # '--cpu-clock',self.noc_clk,
                 '--noi_clk',self.noi_clk,
                 '--router_map_file',self.topology_map_file,
-                '--flat_vn_map_file',self.topology_vn_file,
-                '--flat_nr_map_file',self.topology_nr_list_file,
-                '--ruby'
+                # vn depends on if dateline or stc-dest
+                '--flat_nr_map_file',self.topology_nr_list_file
                 ]
 
+
+        # dateline or escape-src-dest VCs
+        if self.is_dateline_vcs:
+            cmd += ['--use_dateline_vcs',
+                    '--flat_vc_mat_file',self.topology_vn_file,
+                    '--topology','DatelineTransitionVCs']
+        else:
+            cmd += ['--use_escape_vns',
+                    '--flat_vn_map_file',self.topology_vn_file,
+                    '--topology','EscapeVirtualNetworks']
 
 
         if self.mem_or_coh == 'mem':
@@ -297,8 +321,12 @@ class BenchmarkRun:
                 '--evn_n_deadlock_free',f'{self.n_dl_free}',
                 '--evn_min_n_deadlock_free',f'{self.min_n_dl_free}']
 
-        if self.traf_type != 'uniform':
-            cmd += ['--synthetic',f'{self.traf_type}']
+        if self.traf_type != 'uniform_random':
+            cmd += ['--synthetic',f'{self.traf_type}']\
+
+        if self.traf_type == 'custom':
+            cmd += ['--custom_tm',f'{self.custom_tm}']
+
 
 
         os.chdir(home)
@@ -313,7 +341,8 @@ class BenchmarkRun:
 
         # print(f'cmd={cmd}')
         # print(' '.join(cmd))
-        # return
+        # # return
+        # quit()
 
         res = None
 
@@ -387,19 +416,24 @@ def main():
     parser.add_argument('--one_topo',type=str)
     parser.add_argument('--nr_list',type=str)
     parser.add_argument('--vn_map',type=str)
-    parser.add_argument('--noi_freq',type=str)
+    # parser.add_argument('--noi_freq',type=str)
+    parser.add_argument('--noi_freq',type=float)
     parser.add_argument('--n_evn',type=int)
     parser.add_argument('--tot_vcs',type=int)
     parser.add_argument('--n_routers',type=int)
+    parser.add_argument('--dateline_vcs',action='store_true')
 
     parser.add_argument('--map_file_dir',type=str,default='./configs/topologies/paper_solutions/')
 
     parser.add_argument('--sys_clk',type=float,default=4.0)
     parser.add_argument('--num_cpus',type=int,default=40)
     parser.add_argument('--dir_mult',type=int,default=8)
-    parser.add_argument('--traffic',type=str,default='uniform')
+    parser.add_argument('--traffic',type=str,default='uniform_random')
+    parser.add_argument('--custom_tm',type=str)
 
     parser.add_argument('--topology_mask',type=str)
+
+    parser.add_argument('--async_job',type=str)
 
 
     args = parser.parse_args()
@@ -447,6 +481,8 @@ def main():
         het_tf = False
     elif args.mixedfreq_only:
         het_tf = True
+
+    use_dateline_vcs = args.dateline_vcs
 
     # start back
     map_files.reverse()
@@ -499,18 +535,29 @@ def main():
     n_cpus = args.num_cpus
     dir_mult = args.dir_mult
 
-    traf_t = args.traffic
+    traf_ts = [args.traffic]
+    if '[' in args.traffic:
+        traf_ts = []
+        traf_arg = args.traffic
+        traf_arg = traf_arg.replace('[','')
+        traf_arg = traf_arg.replace(']','')
+        split_line = traf_arg.split(',')
+        for line in split_line:
+            traf_ts.append(line)
+
+    custom_tm = args.custom_tm
 
     if args.one_topo is not None:
         map_files = [args.one_topo]
 
     i = 0
-    for mem_or_coh in memcoh:
-        for inj_rate in inj_rates:
-            for map_file in map_files:
-                print(f'{i:04} : Adding {map_file} {inj_rate} (pkts/cpu/cycle) w/ {n_cpus}cpus {dir_mult}x(20/8)dirs @ {clk}GHz')
-                runs += [BenchmarkRun(map_file, n_routers, sim_cycle, inj_rate, mem_or_coh, n_evns, tot_vcs, clk, het_tf, n_cpus, dir_mult, traf_type=traf_t,nr_list=args.nr_list, vn_map=args.vn_map, noi_freq=args.noi_freq)]
-                i+=1
+    for traf_t in traf_ts:
+        for mem_or_coh in memcoh:
+            for inj_rate in inj_rates:
+                for map_file in map_files:
+                    print(f'{i:04} : Adding {map_file} {inj_rate} (pkts/cpu/cycle) {traf_t} w/ {n_cpus}cpus {dir_mult}x(20/8)dirs @ {clk}GHz')
+                    runs += [BenchmarkRun(map_file, n_routers, sim_cycle, inj_rate, mem_or_coh, n_evns, tot_vcs, clk, het_tf, n_cpus, dir_mult, traf_type=traf_t,nr_list=args.nr_list, vn_map=args.vn_map, noi_freq=args.noi_freq,is_dateline_vcs=use_dateline_vcs,custom_tm=custom_tm)]
+                    i+=1
 
     #quit()
 
@@ -536,6 +583,76 @@ def main():
     for config, status in config_status.items():
         print(config + ':\t' + status)
     status_lock.release()
+
+
+    if args.async_job is None:
+        return
+
+    async_job_name = args.async_job
+
+    pre_all_inj_rates = [ float(x.inj_rate) for x in runs]
+
+    output_dirs = [ x.output_dir for x in runs]
+
+    traf_types = [x.traf_type for x in runs]
+
+    traf_types_no_dups = [traf_types[i] for i in range(len(traf_types)) if i == 0 or traf_types[i] != traf_types[i-1]]
+
+    print(f'traf_types={traf_types}')
+    print(f'traf_types_no_dups={traf_types_no_dups}')
+
+    n_diff_traf_types = len(traf_types_no_dups)
+    n_runs_per_traf = len(traf_types) // n_diff_traf_types
+
+    all_out_pkt_lats = [[] for _ in range(n_diff_traf_types)]
+
+    n_counted = 0
+    traf_idx = 0
+    for odir in output_dirs:
+        out_path = os.path.join(odir, 'stats.txt')
+        with open(out_path, 'r') as inf:
+            for line in inf:
+                sep = line.split()
+                if len(sep) < 2:
+                    continue
+                data = sep[1]
+                if 'average_packet_latency' in line:
+                    all_out_pkt_lats[traf_idx].append(float(data))
+        n_counted += 1
+        if n_counted % n_runs_per_traf == 0:
+            traf_idx += 1
+
+    n_counted = 0
+    traf_idx = 0
+    all_inj_rates = [[] for _ in range(n_diff_traf_types)]
+    for idx, inj_rate in enumerate(pre_all_inj_rates):
+        all_inj_rates[traf_idx].append(inj_rate)
+
+        n_counted += 1
+        if n_counted % n_runs_per_traf == 0:
+            traf_idx += 1
+
+    # sort_out
+
+    ASYNC_JOB_RESULT_FILE = '/home/min/a/green456/topologyzoo/job_files/running_results.txt'
+
+
+    out_line = f'{async_job_name} | {sim_cycle} | {traf_types_no_dups}'
+
+    traf_idx = 0
+    for traf_idx, traf_type in enumerate(traf_types_no_dups):
+        out_pkt_lats = all_out_pkt_lats[traf_idx]
+        inj_rates = all_inj_rates[traf_idx]
+        out_line += f' | {inj_rates} | {out_pkt_lats}'
+
+    print(f'out_line={out_line}')
+
+    # for out_lat in out_pkt_lats:
+    #     out_line += f' | {out_lat}'
+    out_line += '\n'
+    with open(ASYNC_JOB_RESULT_FILE,'a') as of:
+        of.write(out_line)
+
 
 if __name__ == '__main__':
     main()

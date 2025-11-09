@@ -82,8 +82,8 @@ for root, dirs, files, in os.walk(data_dir):
         uses_traf = False
 
 
-        # if 'shuffle' in root_split or 'neighbor' in root_split:
-        #     uses_traf = True
+        if 'shuffle' in root_split or 'neighbor' in root_split or 'uniform' in root_split:
+            uses_traf = True
 
         # input(f'uses_traf={uses_traf}')
         # input(f'root_split={root_split}')

@@ -52,6 +52,7 @@ enum TrafficType {BIT_COMPLEMENT_ = 0,
                   TRANSPOSE_ = 6,
                   UNIFORM_RANDOM_ = 7,
                   VC_TEST_ = 8,
+                  CUSTOM_ = 9,
                   NUM_TRAFFIC_PATTERNS_};
 
 class Packet;
@@ -132,12 +133,18 @@ class GarnetSyntheticTraffic : public ClockedObject
     int injVnet;
     int precision;
 
+    int m_n_routers;
+    std::vector<double > m_flat_custom_tm;
+    // int n_gen_pkts;
+
 
     const Cycles responseLimit;
 
     RequestorID requestorId;
 
     void completeRequest(PacketPtr pkt);
+
+    double get_custom_tm_bound(int src, int dest);
 
     void generatePkt();
     void sendPkt(PacketPtr pkt);

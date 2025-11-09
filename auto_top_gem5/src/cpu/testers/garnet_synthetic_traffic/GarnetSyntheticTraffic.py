@@ -50,9 +50,13 @@ class GarnetSyntheticTraffic(ClockedObject):
     inj_vnet = Param.Int(-1, "Vnet to inject in. \
                               0 and 1 are 1-flit, 2 is 5-flit. \
                                 Default is to inject in all three vnets")
-    precision = Param.Int(3, "Number of digits of precision \
+    precision = Param.Int(2, "Number of digits of precision \
                               after decimal point")
     response_limit = Param.Cycles(5000000, "Cycles before exiting \
                                             due to lack of progress")
     test = RequestPort("Port to the memory system to test")
     system = Param.System(Parent.any, "System we belong to")
+
+    n_routers = Param.Int(-1,"For indexing flat custom tm correctly")
+    flat_custom_tm = VectorParam.Float( [],"2D flattened")
+

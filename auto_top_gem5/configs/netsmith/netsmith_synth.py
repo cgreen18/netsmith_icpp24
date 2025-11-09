@@ -39,6 +39,176 @@ from common import Options
 from ruby import Ruby
 
 
+from copy import deepcopy
+
+def ingest_map( path_name):
+
+
+    print(f'ingesting {path_name}')
+
+    r_map = []
+
+    with open(path_name, 'r') as in_file:
+
+        # for _router in range(0,n_routers):
+        #     row = in_file.readline()
+        for row in in_file:
+            row = row.replace('\n','')
+            r_conns = row.split(" ")
+            if '' in r_conns:
+                r_conns.remove('')
+            # print(f'row={row}')
+            # print(r_conns)
+            # print(type(r_conns[0]))
+
+            try:
+                r_conns = [int(elem) for elem in r_conns]
+            except Exception as e:
+                print(f'e={e}')
+                r_conns = [int(float(elem)) for elem in r_conns]
+            r_map.append(r_conns)
+
+
+    return r_map
+
+def zero_diag(twod_mat):
+
+    _n_routers = len(twod_mat)
+    for i in range(_n_routers):
+        twod_mat[i][i] = 0
+
+
+    # input(f'twod_mat={twod_mat}')
+
+    return twod_mat
+
+
+def normalize_tm(twod_mat):
+
+    tot_sum = 0
+    _n_routers = len(twod_mat)
+    for i in range(_n_routers):
+        twod_mat[i][i] = 0
+        tot_sum += sum(twod_mat[i])
+
+    for i in range(_n_routers):
+        for j in range(_n_routers):
+            twod_mat[i][j] = twod_mat[i][j] / tot_sum
+
+    return twod_mat
+
+def rough_scale_to_doubly_substochastic(twod_mat):
+
+    _n_routers = len(twod_mat)
+
+    # get max factor
+    max_factor = 0
+    for colrow in range(_n_routers):
+
+        row_sum = sum(twod_mat[colrow])
+        max_factor = max(max_factor, row_sum)
+
+        col_sum = sum([twod_mat[i][colrow] for i in range(_n_routers)])
+        max_factor = max(max_factor, col_sum)
+
+    # input(f'max_factor = {max_factor}')
+
+    for i in range(_n_routers):
+        for j in range(_n_routers):
+            twod_mat[i][j] = twod_mat[i][j] / max_factor
+
+    return twod_mat
+
+def scale_to_doubly_substochastic(matrix, max_iter=1000, tol=1e-6):
+    # Copy the matrix to avoid modifying the original
+    n, m = len(matrix), len(matrix[0])
+    scaled_matrix = [row[:] for row in matrix]
+
+    for _ in range(max_iter):
+        # Scale rows
+        for i in range(n):
+            row_sum = sum(scaled_matrix[i])
+            if row_sum > 1:
+                scaled_matrix[i] = [x / row_sum for x in scaled_matrix[i]]
+
+        # Scale columns
+        for j in range(m):
+            col_sum = sum(scaled_matrix[i][j] for i in range(n))
+            if col_sum > 1:
+                for i in range(n):
+                    scaled_matrix[i][j] /= col_sum
+
+        # Check if the matrix is close enough to doubly-substochastic
+        row_sums = [sum(row) for row in scaled_matrix]
+        col_sums = [sum(scaled_matrix[i][j] for i in range(n)) for j in range(m)]
+
+        if all(abs(rs - 1) <= tol or rs <= 1 for rs in row_sums) and \
+           all(abs(cs - 1) <= tol or cs <= 1 for cs in col_sums):
+            break
+
+    return scaled_matrix
+
+def convert_to_doubly_stochastic_old(twod_mat):
+
+
+    import numpy as np
+    import cvxpy as cp
+
+    # Example matrix
+    matrix = np.array(twod_mat)
+
+    # Define variables
+    X = cp.Variable(matrix.shape, nonneg=True)
+
+    # Constraints for row and column sums <= 1
+    constraints = [
+        cp.sum(X, axis=1) <= 1,  # Row sums
+        cp.sum(X, axis=0) <= 1   # Column sums
+    ]
+
+    # Objective: Minimize deviation from original matrix
+    objective = cp.Minimize(cp.norm(X - matrix, "fro"))
+
+    # Solve the optimization problem
+    problem = cp.Problem(objective, constraints)
+    problem.solve()
+
+    # Print the result
+    print("Doubly-substochastic matrix:")
+    print(X.value)
+
+    quit()
+
+    _n_routers = len(twod_mat)
+    for colrow in range(_n_routers):
+        # col
+        col_sum = sum([twod_mat[i][colrow] for i in range(_n_routers)])
+
+
+
+def format_tm(twod_mat):
+    _n_routers = len(twod_mat)
+    orig_copy = deepcopy(twod_mat)
+    for i in range(_n_routers):
+        # print(f'{i:02} : {twod_mat[i]}')
+        for j in range(_n_routers):
+            prev_val = orig_copy[i][j]
+            new_val = sum(orig_copy[i][0:j] ) + prev_val
+            twod_mat[i][j] = new_val
+
+            # input(f'{i},{j} : {prev_val} -> {new_val}')
+
+    return twod_mat
+
+def flatten_twod(twod_mat):
+
+    flat_mat = []
+    for row in twod_mat:
+        flat_mat += row
+    return flat_mat
+
+
+
 config_path = os.path.dirname(os.path.abspath(__file__))
 config_root = os.path.dirname(config_path)
 m5_root = os.path.dirname(config_root)
@@ -49,7 +219,7 @@ Options.addNoISAOptions(parser)
 parser.add_argument("--synthetic", default="uniform_random",
                     choices=['uniform_random', 'tornado', 'bit_complement', \
                              'bit_reverse', 'bit_rotation', 'neighbor', \
-                             'shuffle', 'transpose','vc_test'])
+                             'shuffle', 'transpose','vc_test','custom'])
 
 parser.add_argument("-i", "--injectionrate", type=float, default=0.1,
                     metavar="I",
@@ -57,7 +227,7 @@ parser.add_argument("-i", "--injectionrate", type=float, default=0.1,
                         Takes decimal value between 0 to 1 (eg. 0.225). \
                         Number of digits after 0 depends upon --precision.")
 
-parser.add_argument("--precision", type=int, default=3,
+parser.add_argument("--precision", type=int, default=5,
                     help="Number of digits of precision after decimal point\
                         for injection rate")
 
@@ -92,12 +262,15 @@ parser.add_argument("--vc_map_file", type=str, default="configs/topologies/paper
 parser.add_argument("--nr_map_file", type=str, default="configs/topologies/paper_nrs/kite_large.nr",
                     help=".nr file with next rotuer map.")
 
-parser.add_argument("--flat_nr_map_file", type=str, 
+parser.add_argument("--flat_nr_map_file", type=str,
                     default="configs/topologies/nrl_files/kite_large_naive.nrl",
                     help=".")
 
 parser.add_argument("--flat_vn_map_file", type=str,
                     default="configs/topologies/vn_maps/kite_large_naive_none.vn",
+                    help=".")
+
+parser.add_argument("--flat_vc_mat_file", type=str,
                     help=".")
 
 parser.add_argument("--inj-vnet", type=int, default=-2,
@@ -142,11 +315,16 @@ parser.add_argument("--evn_min_n_deadlock_free", type=int, default=2,
 
 parser.add_argument("--use_escape_vns",action='store_true')
 
+parser.add_argument("--use_dateline_vcs",action='store_true')
+
 parser.add_argument("--use_vll",action='store_true')
 
 parser.add_argument('--synth_traffic',action='store_true')
 
 parser.add_argument('--vc_to_test',type=int,default=-1)
+
+parser.add_argument("--custom_tm", type=str,
+                    help=".")
 
 # Add the ruby specific and protocol specific options
 #
@@ -160,6 +338,24 @@ cpus = []
 n_noi = args.noi_routers
 np = args.num_cpus
 
+flat_tm = []
+if args.synthetic == 'custom':
+    unnormalized_twod_tm = ingest_map(args.custom_tm)
+    normalized_twod_tm = zero_diag(unnormalized_twod_tm)
+    normalized_twod_tm = rough_scale_to_doubly_substochastic(unnormalized_twod_tm)
+
+
+    for i,row in enumerate(normalized_twod_tm):
+        print(f'{i:02} : {sum(row)} : {row}')
+
+
+    normalized_twod_tm = format_tm(normalized_twod_tm)
+
+    flat_tm = flatten_twod(normalized_twod_tm)
+
+
+
+# quit(-1)
 
 # reads and writes
 # vnet 0 and 1 = -2
@@ -173,10 +369,11 @@ cpus += [ GarnetSyntheticTraffic(
                      inj_vnet=args.inj_vnet,
                      precision=args.precision,
                      num_dest=args.num_dirs,
+                     flat_custom_tm=flat_tm,
+                     n_routers=args.noi_routers,
                      ) \
          for i in range(args.num_cpus) ]
 
-print(f'cpus({len(cpus)})={cpus})')
 
 
 # create the desired simulated system

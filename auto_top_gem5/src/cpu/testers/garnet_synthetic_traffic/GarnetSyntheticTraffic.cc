@@ -91,7 +91,9 @@ GarnetSyntheticTraffic::GarnetSyntheticTraffic(const Params &p)
       injVnet(p.inj_vnet),
       precision(p.precision),
       responseLimit(p.response_limit),
-      requestorId(p.system->getRequestorId(this))
+      requestorId(p.system->getRequestorId(this)),
+      m_n_routers(p.n_routers),
+      m_flat_custom_tm(p.flat_custom_tm)
 {
     // set up counters
     noResponseCycles = 0;
@@ -106,6 +108,11 @@ GarnetSyntheticTraffic::GarnetSyntheticTraffic(const Params &p)
     id = TESTER_NETWORK++;
     DPRINTF(GarnetSyntheticTraffic,"Config Created: Name = %s , and id = %d\n",
             name(), id);
+
+    // n_gen_pkts = 0;
+
+    // printf("numDestinations = %d and m_n_routers=%d\n",numDestinations,m_n_routers);
+
 
 }
 
@@ -139,6 +146,21 @@ GarnetSyntheticTraffic::completeRequest(PacketPtr pkt)
 }
 
 
+double
+GarnetSyntheticTraffic::get_custom_tm_bound(int src, int dest)
+{
+    if (dest < 0){
+        return 0.0;
+    }
+ 
+    // 2D => flat
+    int index = src*m_n_routers + dest;
+ 
+    // printf("tm bound for src %d, dest %d, indx index %d = %f\n",src,dest,index,m_flat_custom_tm[index]);
+
+    return m_flat_custom_tm[index];
+}
+
 void
 GarnetSyntheticTraffic::tick()
 {
@@ -153,7 +175,16 @@ GarnetSyntheticTraffic::tick()
     bool sendAllowedThisCycle;
     double injRange = pow((double) 10, (double) precision);
     unsigned trySending = random_mt.random<unsigned>(0, (int) injRange);
+
+    double adj_inj_rate = injRate;
+
+    if (traffic == CUSTOM_){
+        adj_inj_rate = (double)m_n_routers * injRate;
+    }
+
+    // do NOT adjust if doubly stochastic
     if (trySending < injRate*injRange)
+    // if (trySending < adj_inj_rate*injRange)
         sendAllowedThisCycle = true;
     else
         sendAllowedThisCycle = false;
@@ -204,6 +235,12 @@ GarnetSyntheticTraffic::generatePkt()
     int source = id;
     int src_x = id%radix;
     int src_y = id/radix;
+
+    // for custom. kind of hacky but not bad
+    bool found_destination = true;
+
+    // n_gen_pkts ++;
+    // printf("Calls to genPkt %d\n",n_gen_pkts);
 
     if (singleDest >= 0)
     {
@@ -260,9 +297,77 @@ GarnetSyntheticTraffic::generatePkt()
         dest_y = src_y;
         destination = dest_y*radix + dest_x;
     }
+    else if (traffic == CUSTOM_){
+        found_destination = false;
+
+        // generate a random (unsigned) val
+        //  in [0, 10^precision)
+        //  e.g. precision = 1 => [0,10)
+        double prob_val_range = pow((double) 10, (double) precision);
+
+        unsigned prob_val = random_mt.random<unsigned>(0, (int)prob_val_range);
+
+        // printf("Looking at source %d\n",source);
+
+        // printf("Got prob_val %d w/ range %f\n",prob_val,prob_val_range);
+
+        int dest_iter = 0;
+        while(!found_destination && dest_iter < m_n_routers){
+
+            if (dest_iter == source){
+                dest_iter ++;
+                continue;
+            }
+
+            // printf("Testing dest_iter %d : ",dest_iter);
+
+            double prob_val_low_bound = prob_val_range * get_custom_tm_bound(source, dest_iter - 1);
+            double prob_val_high_bound = prob_val_range * get_custom_tm_bound(source, dest_iter);
+
+            // printf("with range [%f,%f)\n",prob_val_low_bound,prob_val_high_bound);
+
+            // in range
+            if ((prob_val >= prob_val_low_bound) && (prob_val < prob_val_high_bound) ){
+                destination = dest_iter;
+                found_destination = true;
+                // printf("Found dest %d\n",destination);
+            }
+
+            dest_iter ++;
+
+        }
+
+        int dirs_per_router = num_destinations / m_n_routers;
+
+        // how are they interleaved?
+        // assume interleaved not blocked
+        unsigned dir_mult = random_mt.random<unsigned>(0, dirs_per_router - 1);
+        dir_mult ++;
+        
+
+
+        // if(found_destination){
+        //     printf("Looking at source %d\n",source);
+        //     printf("Outside loop found destination? %d => %d : \n",destination,dir_mult*destination);
+        // }
+        // else{
+        //     printf("Didn't find destination!\n");
+        // }
+
+        destination = dir_mult*destination;
+    }
     else {
         fatal("Unknown Traffic Type: %s!\n", traffic);
     }
+
+    
+
+
+    // for custom
+    if (!found_destination){
+        return;
+    }
+
 
     // The source of the packets is a cache.
     // The destination of the packets is a directory.
@@ -362,6 +467,7 @@ GarnetSyntheticTraffic::initTrafficType()
     trafficStringToEnum["transpose"] = TRANSPOSE_;
     trafficStringToEnum["uniform_random"] = UNIFORM_RANDOM_;
     trafficStringToEnum["vc_test"] = VC_TEST_;
+    trafficStringToEnum["custom"] = CUSTOM_;
 }
 
 void
