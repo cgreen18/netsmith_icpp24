@@ -80,6 +80,11 @@ def setCPUClass(options):
         CPUClass = TmpClass
         TmpClass = AtomicSimpleCPU
         test_mem_mode = 'atomic'
+    elif options.kvm_start:
+        CPUClass = TmpClass
+        TmpClass = X86KvmCPU
+        test_mem_mode = 'atomic_noncaching'
+
 
     # Ruby only supports atomic accesses in noncaching mode
     if test_mem_mode == 'atomic' and options.ruby:

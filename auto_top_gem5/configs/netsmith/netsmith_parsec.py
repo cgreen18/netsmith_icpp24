@@ -12,6 +12,7 @@
 # unmodified and in its entirety in all distributions of the software,
 # modified or unmodified, in source code or in binary form.
 #
+# Copyright (c) 2025 Conor Green
 # Copyright (c) 2012-2014 Mark D. Hill and David A. Wood
 # Copyright (c) 2009-2011 Advanced Micro Devices, Inc.
 # Copyright (c) 2006-2007 The Regents of The University of Michigan
@@ -141,7 +142,8 @@ def writeBenchScript(dir, bench, size, ncpus):
     bench_file = open(file_name,"w+")
 
     # m5 checkpoint;
-    cmd = f'cd /home/gem5/parsec-benchmark; source env.sh; m5 exit; parsecmgmt -a run -p {bench} -c gcc-hooks -i {size} -n {ncpus}; sleep 5; m5 exit;'
+    # cmd = f'cd /home/gem5/parsec-benchmark; source env.sh; m5 exit; parsecmgmt -a run -p {bench} -c gcc-hooks -i {size} -n {ncpus}; sleep 5; m5 exit;'
+    cmd = f'cd /home/gem5/parsec-benchmark; source env.sh; parsecmgmt -a run -p {bench} -c gcc-hooks -i {size} -n {ncpus}; sleep 5; m5 exit;'
 
     bench_file.write(cmd)
 
@@ -447,19 +449,11 @@ parser.add_argument('--max_insts_after_boot',type=int,default=1000000000)
 
 parser.add_argument('--insts_after_warmup',type=int,default=100000)
 
+parser.add_argument('--kvm_start',action='store_true')
 
 
-
-
-
-
-
-    # use these configs
-    # https://github.com/darchr/gem5-skylake-config/blob/master/
-
-
-
-
+# use these configs
+# https://github.com/darchr/gem5-skylake-config/blob/master/
 
 
 # Add the ruby specific and protocol specific args
@@ -472,13 +466,8 @@ args = parser.parse_args()
 # system under test can be any CPU
 (TestCPUClass, test_mem_mode, FutureClass) = Simulation.setCPUClass(args)
 
-# FutureClass = Simulation.getCPUClass("X86TimingSimpleCPU")
-
-# TestCPUClass, test_mem_mode = Simulation.getCPUClass('X86KvmCPU')
-# FutureClass, test_mem_mode = Simulation.getCPUClass('X86TimingSimpleCPU')
-
-
-
+print(f'Beginning {TestCPUClass} simulation')
+print(f'Later, {FutureClass} simulation')
 
 
 # Match the memories with the CPUs, based on the options for the test system
@@ -518,8 +507,6 @@ if args.script:
 test_sys = build_test_system(np, command_file_name)
 
 
-
-
 # avoid running out of host memory
 test_sys.mmap_using_noreserve = True
 
@@ -535,10 +522,10 @@ if ObjectList.is_kvm_cpu(TestCPUClass) or \
     root.sim_quantum = int(1e9) # 1 ms
 
 
-if args.maxinsts:
-    for i in range(np):
-        # test_sys.cpu[i].max_insts_any_thread = args.maxinsts
-        test_sys.cpu[i].max_insts_all_threads = args.maxinsts
+# if args.maxinsts:
+#     for i in range(np):
+#         # test_sys.cpu[i].max_insts_any_thread = args.maxinsts
+#         test_sys.cpu[i].max_insts_all_threads = args.maxinsts
 
 
 switch_cpus = None
@@ -568,28 +555,24 @@ if FutureClass:
             # switch_cpus[i].max_insts_any_thread = args.maxinsts
             switch_cpus[i].max_insts_all_threads = args.maxinsts
 
-            # override
-            if args.insts_after_warmup:
-                # switch_cpus[i].max_insts_any_thread = args.insts_after_warmup
-                switch_cpus[i].max_insts_all_threads = args.insts_after_warmup
-
-
+        # override
+        if args.insts_after_warmup:
+            # switch_cpus[i].max_insts_any_thread = args.insts_after_warmup
+            switch_cpus[i].max_insts_all_threads = args.insts_after_warmup
 
         switch_cpus[i].createThreads()
-
 
     test_sys.switch_cpus = switch_cpus
 
     switch_cpu_list = [(test_sys.cpu[i], switch_cpus[i]) for i in range(np)]
 
 
-
-
 if args.wait_gdb:
     test_sys.workload.wait_for_remote_gdb = True
 
 # Exit from guest on workbegin/workend
-test_sys.exit_on_work_items = True
+if args.work_begin_exit_count != None:
+    test_sys.exit_on_work_items = True
 
 Simulation.setWorkCountOptions(test_sys, args)
 
@@ -605,14 +588,12 @@ Simulation.setWorkCountOptions(test_sys, args)
 
 print("Running the simulation")
 
-print(f'Beginning {TestCPUClass} simulation')
-print(f'Later, {FutureClass} simulation')
 
 print(f'Running: {command_file_name}')
 
 print(f'1st cpu ({test_sys.cpu[0].type}) will run for {test_sys.cpu[0].max_insts_all_threads} insts')
 if switch_cpus is not None:
-    print(f'2nd cpu ({switch_cpus[0].type}) will run for {switch_cpus[0].max_insts_all_threads} insts')
+    print(f'2nd cpu ({switch_cpus[0].type}) will run for {test_sys.switch_cpus[0].max_insts_all_threads} insts')
 
 
 
@@ -628,10 +609,6 @@ root.apply_config(args.param)
 
 print(f'Will restore from {checkpoint_dir}')
 
-# cont = input('continue?')
-# if 'n' in cont:
-#     quit(-1)
-
 
 abs_start = time.time()
 start_time = time.time()
@@ -639,13 +616,11 @@ m5.instantiate(checkpoint_dir)
 
 end_time = time.time()
 
-
 print(f'Instantiatied')
 print(f'If applicable, restored from {checkpoint_dir}')
 
 print(f'Real time: {end_time-start_time:.2f}s')
 print(f'Total real time: {end_time-abs_start:.2f}s')
-
 
 # now cptdir should be redefined to be the OUTPUT dir
 cptdir = m5.options.outdir
@@ -653,12 +628,8 @@ cptdir = m5.options.outdir
 print(f'Will output checkpoints to {cptdir}')
 
 
-
-
 start_time = time.time()
 start_tick = m5.curTick()
-
-
 
 exit_event = m5.simulate()
 
@@ -687,7 +658,8 @@ print(f'Total real time: {end_time-abs_start:.2f}s')
 
 print(f'Dumping and resetting stats...')
 
-m5.stats.dump()
+# dont track boot stats
+# m5.stats.dump()
 m5.stats.reset()
 
 
@@ -695,12 +667,8 @@ print("Switched CPUS @ tick %s" % (m5.curTick()))
 
 m5.switchCpus(test_sys, switch_cpu_list)
 
-
-
-
 start_time = time.time()
 start_tick = m5.curTick()
-
 
 exit_event = m5.simulate()
 
@@ -711,6 +679,7 @@ end_time = time.time()
 print("Exiting @ tick {} because {}.".format(
         m5.curTick(),
         exit_event.getCause() ))
+
 
 # Simulation is over at this point. We acknowledge that all the simulation
 # events were successful.
