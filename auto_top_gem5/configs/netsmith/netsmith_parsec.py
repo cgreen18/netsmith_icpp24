@@ -451,6 +451,8 @@ parser.add_argument('--insts_after_warmup',type=int,default=100000)
 
 parser.add_argument('--kvm_start',action='store_true')
 
+parser.add_argument('--atomic_start',action='store_true')
+
 
 # use these configs
 # https://github.com/darchr/gem5-skylake-config/blob/master/
