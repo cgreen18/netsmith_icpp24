@@ -288,7 +288,7 @@ parser.add_argument("--cpus-per-router", type=int, default=4,
 parser.add_argument("--noc_rows", type=int, default=4,
                     help="TODO")
 
-parser.add_argument("--noi_rows", type=int, default=4,
+parser.add_argument("--noi_rows", type=int,
                     help="TODO")
 
 parser.add_argument("--noi_routers", type=int, default=20,
@@ -300,9 +300,8 @@ parser.add_argument("--noc_clk", type=str, default='1.8GHz',
 parser.add_argument("--noi_clk", type=str, default='1.8GHz',
                     help="TODO")
 
-parser.add_argument("--mem_or_coh", type=str, default='mem',
+parser.add_argument("--mem_or_coh", type=str, default='coh',
                     help="TODO")
-
 
 parser.add_argument("--evn_deadlock_partition", type=int, default=0,
                     help="TODO")

@@ -27,20 +27,15 @@ class EscapeVirtualNetworks(SimpleTopology):
         cpu_clk = options.ruby_clock
         noi_clk = options.noi_clk
 
-        # noi_clk_int =
+        # Will be part of self later
+        # 1:1 ratio
+        n_routers = n_noi_routers
 
 
-
-        n_rows = 4
-        if n_noi_routers == 64:
-            n_rows = 8
+        # n_rows = options.noi_rows
+        n_rows = max(1,math.ceil(math.sqrt(n_routers)))
 
         per_row = n_noi_routers // n_rows
-
-        # N_CPUS = 64
-        # assert(n_cpus == N_CPUS)
-        # for now equal dirs to cpus
-        # assert(n_dirs == n_cpus)
 
         # no dma controllers
         assert('DMA_Controller' not in [n.type for n in nodes])
@@ -48,35 +43,17 @@ class EscapeVirtualNetworks(SimpleTopology):
         caches = [n for n in nodes if n.type != 'Directory_Controller']
         dirs = [n for n in nodes if n.type == 'Directory_Controller']
 
-        # print(f'caches({len(caches)})={caches}')
-        # print(f'dirs({len(dirs)})={dirs}')
-
         assert(n_cpus == len(caches))
-        # assert(n_noi_routers == n_cpus)
-        # assert(n_dirs == len(dirs))
-
-        # nothing else (dma)
-        # assert(n_cpus + n_dirs == len(nodes))
 
         # obligatory required sets
         link_latency = options.link_latency
         router_latency = options.router_latency
 
-        # Will be part of self later
-        # 1:1 ratio
-        n_routers = n_noi_routers
 
-
-        # vcmap_path = options.vc_map_file
-        # vc_map = self.ingest_map(vcmap_path, n_routers)
-
-
-        # nrmap_path = options.nr_map_file
-        # nr_map = self.ingest_map(nrmap_path, n_routers)
-
+        # this is 2d ((n^2)xn)
         flat_nr_map_path = options.flat_nr_map_file
 
-        # this is 3d (20x20x20)
+        # this is 3d (nxnxn)
         (flat_nr_maps, routing_alg) = self.ingest_flat_map_list(flat_nr_map_path, n_routers)
 
         flat_vn_map_path = options.flat_vn_map_file
@@ -84,22 +61,9 @@ class EscapeVirtualNetworks(SimpleTopology):
         # its 2d
         flat_vn_map = self.ingest_flat_map(flat_vn_map_path, n_routers)
 
-        # print(f'Ingested flat nr_maps({len(flat_nr_maps)})=\n\t{flat_nr_maps}')
-
-        # print(f'Ingested flat vc map({len(flat_vn_map)})=\n\t{flat_vn_map}')
-        # quit()
-
-
         # CDC stuff
         noi_clk_domain = SrcClockDomain(clock = noi_clk, voltage_domain=\
                     VoltageDomain(voltage=options.sys_voltage) )
-
-
-        # TODO make latency dependent on link length
-        # # this is for 1d
-        # routers = [Router(router_id=i, latency = router_latency, \
-        #     dest_to_vc=vc_map[i], next_router_map=nr_map[i]) \
-        #     for i in range(n_routers)]
 
         # this is for 2d
         # pass correct block of maps from flat_nr_maps
@@ -134,13 +98,8 @@ class EscapeVirtualNetworks(SimpleTopology):
             for r in range(n_noi_routers):
                 routers[r].clk_domain = noi_clk_domain
 
-        # print(f'ext_cdc_required = {ext_cdc_required}')
-
-        # quit(-1)
-
         int_links = []
         ext_links = []
-
 
         # ext links
         # l1s/dirs -> routers
@@ -155,8 +114,6 @@ class EscapeVirtualNetworks(SimpleTopology):
                                     latency=link_latency,
                                     ext_cdc=ext_cdc_required))
             link_count += 1
-
-
 
         # if coh
         if is_mem_or_coh == 'coh':
@@ -173,34 +130,17 @@ class EscapeVirtualNetworks(SimpleTopology):
 
         else:
             edges = []
-            if n_noi_routers == 20:
-                edges = [0,4,5,9,10,14,15,19]
+            for i in range(n_rows):
+                # "left"
+                edges.append(i*per_row)
+                # "right"
+                edges.append(((i+1)*per_row) - 1)
 
-
-            elif n_noi_routers == 24:
-                edges = [0,5,6,11,12,17,18,23]
-            elif n_noi_routers == 64:
-                edges = [x for x in range(0,64,8) ]
-                edges += [x for x in range(7,64,8) ]
-            elif n_noi_routers == 48:
-                edges = [x for x in range(0,48,8)]
-                edges += [x for x in range(7,48,8)]
-            else:
-                print('error on n_noi_routers')
-                quit(-1)
-
-            dirs_per_router = n_dirs // len(edges)
-            edges = edges*dirs_per_router
-
-            # print(f'edges({len(edges)})={edges}')
-            # print(f'n_dirs={n_dirs}')
-
-            assert(len(edges) == n_dirs)
-
+            n_edges = len(edges)
             for i in range(n_dirs):
 
-                # idx = i % n_routers
-                targ = edges[i]
+                idx = i % n_edges
+                targ = edges[idx]
                 # print(f'Adding external link (id {link_count}): dir node {i} <-> noi router {targ}')
                 ext_links.append(ExtLink(link_id=link_count,
                                         ext_node= dirs[i],
@@ -208,8 +148,6 @@ class EscapeVirtualNetworks(SimpleTopology):
                                         latency=link_latency,
                                         ext_cdc=ext_cdc_required))
                 link_count += 1
-
-
 
         # int links
         # routers -> routers
@@ -219,7 +157,7 @@ class EscapeVirtualNetworks(SimpleTopology):
 
         n_int_links = 0
 
-        weight_mat = self.calc_vll_mat(n_routers)
+        # weight_mat = self.calc_vll_mat(n_routers, per_row)
 
         for src_r in range(n_routers):
             for dest_r, is_connected in enumerate(r_map[src_r]):
@@ -233,14 +171,9 @@ class EscapeVirtualNetworks(SimpleTopology):
 
 
                     this_link_latency = link_latency
-                    # vll
-                    if options.use_vll:
-                        this_link_latency = weight_mat[src_r][dest_r]
-
-
-                    # # useless?
-                    # s_name = f'r{src_r}_lc{link_count}'
-                    # d_name = f'r{dest_r}_lc{link_count}'
+                    # # vll
+                    # if options.use_vll:
+                    #     this_link_latency = weight_mat[src_r][dest_r]
 
                     s_row = src_r // per_row
                     s_col = src_r % per_row
@@ -265,39 +198,10 @@ class EscapeVirtualNetworks(SimpleTopology):
                     link_count += 1
                     n_int_links +=1
 
-        # print(f'int_links[0:10]={int_links[0:10]}')
-        # print(f'int_links[0:10]={int_links[0:20]}')
-        # print(f'int_links[20:30]={int_links[20:30]}')
-
         # Required to be set
         network.int_links = int_links
         network.ext_links = ext_links
         network.routers = routers
-
-    # # Register nodes with filesystem
-    # def registerTopology(self, options):
-
-    #     # closest_power_of_two = int(math.log(options.num_cpus,2))**2
-    #     # # if():
-    #     # print(f'closest_power_of_two={closest_power_of_two}')
-    #     # per_cpu = MemorySize(options.mem_size) // closest_power_of_two
-    #     # for i in range(closest_power_of_two):
-    #     #     FileSystemConfig.register_node([i],
-    #     #             per_cpu, i)
-
-    #     # n_cpus = 16
-    #     # per_cpu = MemorySize(options.mem_size) // 16
-    #     # for i in range(n_cpus):
-    #     #     FileSystemConfig.register_node([i],
-    #     #             per_cpu, i)
-
-
-    #     n_cpus = options.num_cpus
-    #     per_cpu = MemorySize(options.mem_size) // n_cpus
-    #     print(f'per_cpu={per_cpu}')
-    #     for i in range(n_cpus):
-    #         FileSystemConfig.register_node([i],
-    #                 per_cpu, i)
 
     # Register nodes with filesystem
     def registerTopology(self, options):
@@ -309,12 +213,10 @@ class EscapeVirtualNetworks(SimpleTopology):
             FileSystemConfig.register_node([i],
                     per_cpu, i)
 
-    def calc_vll_mat(self, n_routers):
+    def calc_vll_mat(self, n_routers, per_row):
 
         weight_mat = []
 
-        # true for both 20 and 30 router configs
-        per_row = 5
 
         for i in range(n_routers):
             weight_mat.append([])
@@ -381,17 +283,12 @@ class EscapeVirtualNetworks(SimpleTopology):
 
         with open(path_name, 'r') as in_file:
 
-            # for _router in range(0,n_routers):
-            #     row = in_file.readline()
             for row in in_file:
 
                 row = row.replace('\n','')
                 r_conns = row.split(" ")
                 if '' in r_conns:
                     r_conns.remove('')
-                # print(f'row={row}')
-                # print(r_conns)
-                # print(type(r_conns[0]))
 
                 try:
                     r_conns = [int(elem) for elem in r_conns]
@@ -402,9 +299,6 @@ class EscapeVirtualNetworks(SimpleTopology):
                 # r_map.append(r_conns)
                 r_map += r_conns
 
-        #input('cont?')
-
-        # assert(len(r_map) == n_routers)b
 
         return r_map
 
@@ -424,22 +318,11 @@ class EscapeVirtualNetworks(SimpleTopology):
                 for j in range(n_routers):
                     thisline = inf.readline()
 
-
                     as_list = ast.literal_eval(thisline)
                     clean_as_list = [e for e in as_list]
 
-                    # print(f'\trouting table for router {i} '+
-                    #     f' row (src) {j} : {clean_as_list}')
-                    # flat_nr_map.append(clean_as_list)
                     a_routers_map += clean_as_list
 
                 flat_nr_map.append(a_routers_map)
-
-
-        # print(f'flat_nr_map({len(flat_nr_map)}) = {flat_nr_map}')
-        # for alist in flat_nr_map:
-        #     for row in alist:
-        #         print(f'{row}')
-        # quit(-1)
 
         return (flat_nr_map, routing_alg)
